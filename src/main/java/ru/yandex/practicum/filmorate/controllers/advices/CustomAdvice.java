@@ -11,24 +11,21 @@ import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
 public class CustomAdvice {
 
     @ExceptionHandler(FilmRequestException.class)
-    public ResponseEntity<Response> handleFilmException(FilmRequestException re){
-        Response response = new Response(re.getMessage());
-        HttpStatus status;
-        if (re.getCodeStatus() != null ){
-            status = re.getCodeStatus();
-        }else {
-            status = HttpStatus.BAD_REQUEST;
-        }
-        return new ResponseEntity<>(response, status);
+    public ResponseEntity<Response> handleFilmException(FilmRequestException re) {
+        return getResponse(re.getCodeStatus(), re.getMessage());
     }
 
     @ExceptionHandler(UserRequestException.class)
-    public ResponseEntity<Response> handleUserException(UserRequestException re){
-        Response response = new Response(re.getMessage());
+    public ResponseEntity<Response> handleUserException(UserRequestException re) {
+        return getResponse(re.getCodeStatus(), re.getMessage());
+    }
+
+    private ResponseEntity<Response> getResponse(HttpStatus httpStatus, String message) {
+        Response response = new Response(message);
         HttpStatus status;
-        if (re.getCodeStatus() != null ){
-            status = re.getCodeStatus();
-        }else {
+        if (httpStatus != null) {
+            status = httpStatus;
+        } else {
             status = HttpStatus.BAD_REQUEST;
         }
         return new ResponseEntity<>(response, status);
