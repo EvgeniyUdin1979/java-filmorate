@@ -1,0 +1,60 @@
+{
+  "login": "dolore_1",
+  "name": "Stas Name",
+  "email": "mail@mail.ru",
+  "birthday": "1946-08-20"
+},
+{
+"login": "dolore_2",
+"name": "Nick Name",
+"email": "mail@mail.ru",
+"birthday": "1946-08-20"
+},
+{
+"login": "dolore_3",
+"name": "Petr Name",
+"email": "mail@mail.ru",
+"birthday": "1946-08-20"
+},
+{
+"login": "dolore_4",
+"name": "John Name",
+"email": "mail@mail.ru",
+"birthday": "1946-08-20"
+},
+{
+"login": "dolore_5",
+"name": "Yura Name",
+"email": "mail@mail.ru",
+"birthday": "1946-08-20"
+},
+{
+"login": "dolore_6",
+"name": "Kolia Name",
+"email": "mail@mail.ru",
+"birthday": "1946-08-20"
+},
+{
+"login": "dolore_7",
+"name": "Vova Name",
+"email": "mail@mail.ru",
+"birthday": "1946-08-20"
+},
+{
+"login": "dolore_8",
+"name": "Sasha Name",
+"email": "mail@mail.ru",
+"birthday": "1946-08-20"
+},
+{
+"login": "dolore_9",
+"name": "Karl Name",
+"email": "mail@mail.ru",
+"birthday": "1946-08-20"
+},
+{
+"login": "dolore_10",
+"name": "Anton Name",
+"email": "mail@mail.ru",
+"birthday": "1946-08-20"
+}

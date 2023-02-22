@@ -1,13 +1,22 @@
 package ru.yandex.practicum.filmorate.controllers.advices;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.util.ArrayList;
+import java.util.List;
+
 @ControllerAdvice
+@Slf4j
 public class CustomAdvice {
 
     @ExceptionHandler(FilmRequestException.class)
@@ -18,6 +27,29 @@ public class CustomAdvice {
     @ExceptionHandler(UserRequestException.class)
     public ResponseEntity<Response> handleUserException(UserRequestException re) {
         return getResponse(re.getCodeStatus(), re.getMessage());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Response> handleBindException(ConstraintViolationException cve){
+        List<ConstraintViolation<?>> constraintViolations = new ArrayList<>(cve.getConstraintViolations());
+        StringBuilder message = new StringBuilder();
+        for (ConstraintViolation<?> constraintViolation : constraintViolations) {
+            message.append(constraintViolation.getMessageTemplate()).append("; ");
+        }
+        log.info(message.toString().trim());
+        return new ResponseEntity<>(new Response(message.toString().trim()),HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Response> handleException(MethodArgumentNotValidException ex) {
+        StringBuilder message = new StringBuilder();
+        Object target = ex.getBindingResult().getTarget();
+        for (ObjectError error : ex.getAllErrors()) {
+            message.append(error.getDefaultMessage()).append("; ");
+        }
+        message.append(target).append("; ");
+        log.info(message.toString().trim());
+        return new ResponseEntity<>(new Response(message.toString().trim()),HttpStatus.BAD_REQUEST);
     }
 
     private ResponseEntity<Response> getResponse(HttpStatus httpStatus, String message) {
