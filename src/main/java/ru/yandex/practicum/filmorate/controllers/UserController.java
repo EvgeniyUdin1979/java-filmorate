@@ -55,7 +55,7 @@ public class UserController {
     public void addFriend(@PathVariable String id,
                           @PathVariable String friendId){
         service.add(id,friendId);
-        log.info("Добавлен друг пользователю {} от пользователя {}.",id,friendId);
+        log.info("Пользователь {} и пользователь {} теперь друзья.",id,friendId);
 
     }
 
@@ -63,7 +63,7 @@ public class UserController {
     public void removeFriend(@PathVariable String id,
                           @PathVariable String friendId){
         service.remove(id,friendId);
-        log.info("Удален друг {} у пользователя {}.",friendId,id);
+        log.info("Пользователь {} и пользователь {} больше не друзья.",id,friendId);
     }
 
     @GetMapping("/{id}/friends")

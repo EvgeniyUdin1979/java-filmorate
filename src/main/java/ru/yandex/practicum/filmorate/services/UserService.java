@@ -36,12 +36,14 @@ public class UserService {
         User user = users.findById(userId);
         User friend = users.findById(friendId);
         user.getFriendsId().add(friend.getId());
+        friend.getFriendsId().add(user.getId());
     }
 
     public void remove(String userId, String friendId){
         User user = users.findById(userId);
         User friend = users.findById(friendId);
         user.getFriendsId().remove(friend.getId());
+        friend.getFriendsId().remove(user.getId());
     }
 
 

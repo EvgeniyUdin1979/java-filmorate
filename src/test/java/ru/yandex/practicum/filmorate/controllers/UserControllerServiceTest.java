@@ -51,8 +51,6 @@ class UserControllerServiceTest {
         upData("src/test/resources/files/userslist.txt", "/users");
         this.mockMvc.perform(put("/users/{id}/friends/{friendId}","1","2"))
                 .andExpect(status().isOk());
-        this.mockMvc.perform(put("/users/{id}/friends/{friendId}","2","1"))
-                .andExpect(status().isOk());
 
         this.mockMvc.perform(get("/users/{id}/friends","1"))
                 .andDo(print())
@@ -109,7 +107,7 @@ class UserControllerServiceTest {
     }
 
     @Test
-    void user1RemoveFriend() throws Exception {
+    void user1And2RemoveFriend() throws Exception {
         upData("src/test/resources/files/userslist.txt", "/users");
         this.mockMvc.perform(put("/users/{id}/friends/{friendId}","1","2"))
                 .andExpect(status().isOk());
@@ -117,6 +115,12 @@ class UserControllerServiceTest {
                 .andExpect(status().isOk());
 
         this.mockMvc.perform(get("/users/{id}/friends","1"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("$.length()").value(0)
+                );
+        this.mockMvc.perform(get("/users/{id}/friends","2"))
                 .andDo(print())
                 .andExpectAll(
                         status().isOk(),
