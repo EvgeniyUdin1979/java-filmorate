@@ -7,9 +7,9 @@ import java.util.List;
 public interface FilmStorage {
     List<Film> findAll();
 
-    Film findById(String id);
+    Film findById(int id);
 
-    void create(Film film);
+    Film create(Film film);
 
     void removeById(int id);
 

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controllers.advices;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,6 +51,13 @@ public class CustomAdvice {
         message.append(target).append("; ");
         log.info(message.toString().trim());
         return new ResponseEntity<>(new Response(message.toString().trim()),HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(JsonParseException.class)
+    public ResponseEntity<Response> handleException(JsonParseException ex) {
+        String message = "Ошибка в полученном Json, проверьте данные и повторите попытку!";
+        log.info(message);
+        return new ResponseEntity<>(new Response(message),HttpStatus.BAD_REQUEST);
     }
 
     private ResponseEntity<Response> getResponse(HttpStatus httpStatus, String message) {

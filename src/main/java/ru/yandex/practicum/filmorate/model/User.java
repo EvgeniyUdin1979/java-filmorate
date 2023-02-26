@@ -6,10 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
-import javax.validation.constraints.Pattern;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,8 +17,8 @@ import java.util.Set;
 @EqualsAndHashCode
 @JsonIgnoreProperties(value = "friendsId")
 public class User {
+    @PositiveOrZero(message = "id не может быть отрицательный")
     private int id;
-//    @NotEmpty(message = "email не может быть пустым или отсутствовать!")
     @Email(message = "Не корректный Email!")
     private final String email;
 
@@ -35,6 +32,8 @@ public class User {
     private final LocalDate birthday;
 
     private final Set<Integer> friendsId = new HashSet<>();
+
+
 
     @Override
     public String toString() {
