@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
@@ -17,7 +18,7 @@ public class UserService {
     private final UserStorage users;
 
     @Autowired
-    public UserService(UserStorage users) {
+    public UserService(@Qualifier("userDAO")UserStorage users) {
         this.users = users;
     }
 
@@ -25,7 +26,7 @@ public class UserService {
         return users.findAll();
     }
 
-    public void createUser(User user){
+    public User createUser(User user){
         if (user.getId() != 0) {
             String message ="Для добавления пользователя не нужно указывать id!";
             log.info(message + " " + user);
@@ -35,20 +36,20 @@ public class UserService {
             log.info("User не имеет имени! Будет использован login {}", user);
             user.setName(user.getLogin());
         }
-        users.create(user);
+       return users.create(user);
     }
     public User findById(String id){
         return findUserById(validateAndParseInt(id));
     }
 
-    public void updateUser(User user){
+    public User updateUser(User user){
         if (user.getId() == 0) {
             String message = "Для обновления пользователя id нужно указать больше чем 0!";
             log.info(message,user);
             throw new UserRequestException(message);
         }
         findUserById(user.getId());
-        users.update(user);
+       return users.update(user);
     }
     public void removeAll(){
         users.removeAll();
@@ -79,6 +80,7 @@ public class UserService {
         User friend = findUserById(validateAndParseInt(friendId));
         user.getFriendsId().add(friend.getId());
         friend.getFriendsId().add(user.getId());
+        users.update(user);
     }
 
     public void removeFriend(String userId, String friendId){
@@ -86,6 +88,7 @@ public class UserService {
         User friend = findUserById(validateAndParseInt(friendId));
         user.getFriendsId().remove(friend.getId());
         friend.getFriendsId().remove(user.getId());
+        users.update(user);
     }
 
     private int validateAndParseInt(String id) {

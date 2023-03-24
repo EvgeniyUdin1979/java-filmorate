@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,12 +19,11 @@ import java.util.Set;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @EqualsAndHashCode
-@JsonIgnoreProperties(value = {"likesQuantity"},allowGetters = true)
+@JsonIgnoreProperties(value = {"likesQuantity"}, allowGetters = true)
 public class Film {
     @PositiveOrZero(message = "id не может быть отрицательный")
-    private  int id;
+    private int id;
 
     @NotBlank(message = "Название фильма не может быть отсутствовать, быть пустым или состоять только из пробелов!")
     private final String name;
@@ -36,10 +36,33 @@ public class Film {
     @Positive(message = "Длительность фильма должна быть больше чем 0!")
     private final int duration;
     @JsonIgnore
-    private  final Set<Integer> likesId = new HashSet<>();
+    private final Set<Integer> likesId = new HashSet<>();
 
     @JsonIgnoreProperties(allowGetters = true)
     private int likesQuantity;
+
+    private Mpa mpa;
+
+    private final Set<Genre> genres = new HashSet<>();
+
+
+    @JsonCreator
+    public Film(@JsonProperty("id") int id,
+                @JsonProperty("name") String name,
+                @JsonProperty("description") String description,
+                @JsonProperty("releaseDate") LocalDate releaseDate,
+                @JsonProperty("duration") int duration,
+                @JsonProperty("likesQuantity") int likesQuantity,
+                @JsonProperty("mpa") Mpa mpa) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.releaseDate = releaseDate;
+        this.duration = duration;
+        this.likesQuantity = likesQuantity;
+        this.mpa = mpa;
+    }
+
 
     @Override
     public String toString() {

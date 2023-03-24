@@ -1,7 +1,8 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +14,6 @@ import java.util.Set;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @EqualsAndHashCode
 @JsonIgnoreProperties(value = "friendsId")
 public class User {
@@ -33,7 +33,18 @@ public class User {
 
     private final Set<Integer> friendsId = new HashSet<>();
 
-
+    @JsonCreator
+    public User(@JsonProperty("id") int id,
+                @JsonProperty("email")String email,
+                @JsonProperty("login")String login,
+                @JsonProperty("name")String name,
+                @JsonProperty("birthday")LocalDate birthday) {
+        this.id = id;
+        this.email = email;
+        this.login = login;
+        this.name = name;
+        this.birthday = birthday;
+    }
 
     @Override
     public String toString() {

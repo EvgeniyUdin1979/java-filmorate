@@ -35,9 +35,9 @@ public class UserController {
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
-        service.createUser(user);
-        log.info("Пользоваель добавлен: " + user);
-        return user;
+        User userAdd = service.createUser(user);
+        log.info("Пользоваель добавлен: " + userAdd);
+        return userAdd;
     }
 
 
@@ -52,9 +52,9 @@ public class UserController {
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-        service.updateUser(user);
+        User userUpdate = service.updateUser(user);
         log.info("Данные пользователя обновленны.");
-        return user;
+        return userUpdate;
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")

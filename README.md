@@ -1,5 +1,5 @@
 # java-filmorate
-![](db_project.png)
+![](db_project_1.png)
 
 ## Описание базы данных.
 Данная база содержит несколько схем, по этому для обращение к таблицам происходит через название схемы.
@@ -26,8 +26,8 @@ JOIN filmorate.genre g on g.id = fg.genre_id
 ~~~sql
 SELECT f.name,count(l.user_id)
 FROM filmorate.likes as l
-JOIN filmorate.film as f on f.id = l.like_id
-WHERE l.like_id = 1
+JOIN filmorate.film as f on f.id = l.film_id
+WHERE l.film_id = 1
 GROUP BY f.name;
 ~~~
 

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
@@ -22,7 +23,7 @@ public class FilmService {
     private final UserService userService;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserService userService) {
+    public FilmService(@Qualifier("filmDAO")FilmStorage filmStorage,UserService userService) {
         this.filmStorage = filmStorage;
         this.userService = userService;
     }
@@ -44,9 +45,9 @@ public class FilmService {
        return filmStorage.create(film);
     }
 
-    public void update(Film film){
+    public Film update(Film film){
         findFilmById(film.getId());
-        filmStorage.update(film);
+       return filmStorage.update(film);
     }
 
     public void removeAll(){
@@ -58,6 +59,7 @@ public class FilmService {
         User user = userService.findById(userId);
         film.getLikesId().add(user.getId());
         film.setLikesQuantity(film.getLikesId().size());
+        filmStorage.update(film);
     }
 
     public void removeLike(String userId,String filmId){
@@ -65,11 +67,12 @@ public class FilmService {
         User user = userService.findById(userId);
         film.getLikesId().remove(user.getId());
         film.setLikesQuantity(film.getLikesId().size());
+        filmStorage.update(film);
     }
 
     public List<Film> mostPopularFilm(int count){
         return filmStorage.findAll().stream()
-                .sorted((o1, o2) -> o2.getLikesId().size() - o1.getLikesId().size())
+                .sorted((o1, o2) -> o2.getLikesQuantity() - o1.getLikesQuantity())
                 .limit(count)
                 .collect(Collectors.toList());
     }

@@ -9,11 +9,11 @@ public interface UserStorage {
 
     User findById(int id);
 
-    void create(User user);
+    User create(User user);
 
     void removeById(int id);
 
-    void update(User user);
+    User update(User user);
 
     void removeAll();
 }
