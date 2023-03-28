@@ -54,9 +54,10 @@ class UserControllerTest {
         ObjectMapper mapper = JsonMapper.builder()
                 .addModules(new JavaTimeModule())
                 .build();
-        switch (urlRequest){
+        switch (urlRequest) {
             case "/films":
-                List<Film> films = mapper.readValue(string,new TypeReference<List<Film>>() {});
+                List<Film> films = mapper.readValue(string, new TypeReference<List<Film>>() {
+                });
                 for (Film film : films) {
                     this.mockMvc.perform(post(urlRequest)
                             .content(mapper.writeValueAsString(film))
@@ -64,7 +65,8 @@ class UserControllerTest {
                 }
                 break;
             case "/users":
-                List<User> users = mapper.readValue(string,new TypeReference<List<User>>() {});
+                List<User> users = mapper.readValue(string, new TypeReference<List<User>>() {
+                });
                 for (User user : users) {
                     this.mockMvc.perform(post(urlRequest)
                             .content(mapper.writeValueAsString(user))
@@ -158,8 +160,8 @@ class UserControllerTest {
                 "  \"birthday\": \"2446-08-20\"\n" +
                 "}";
         this.mockMvc.perform(post("/users")
-                .content(json)
-                .header("Content-Type", "application/json")).andDo(print())
+                        .content(json)
+                        .header("Content-Type", "application/json")).andDo(print())
                 .andExpectAll(
                         status().isBadRequest(),
                         jsonPath("$.message")
@@ -177,7 +179,7 @@ class UserControllerTest {
                 "  \"birthday\": \"\"\n" +
                 "}";
         this.mockMvc.perform(post("/users")
-                .content(json).header("Content-Type", "application/json")).andDo(print())
+                        .content(json).header("Content-Type", "application/json")).andDo(print())
                 .andExpectAll(
                         status().isBadRequest(),
                         jsonPath("$.message")
@@ -195,7 +197,7 @@ class UserControllerTest {
                 "  \"birthday\": \"1976-09-20\"\n" +
                 "}";
         this.mockMvc.perform(post("/users")
-                .content(json).header("Content-Type", "application/json")).andDo(print())
+                        .content(json).header("Content-Type", "application/json")).andDo(print())
                 .andExpectAll(
                         status().isOk(),
                         jsonPath("$.login").value("dolore"),
@@ -219,8 +221,6 @@ class UserControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("{\"message\":\"Пользователь с данным id: 9999, не найден\"}"));
     }
-
-
 
 
 }

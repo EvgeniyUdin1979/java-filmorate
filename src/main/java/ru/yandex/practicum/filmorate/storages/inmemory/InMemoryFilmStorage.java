@@ -21,30 +21,30 @@ public class InMemoryFilmStorage implements FilmStorage {
         this.globalId = 0;
     }
 
-    public Film create(Film film) throws FilmRequestException{
+    public Film create(Film film) throws FilmRequestException {
         film.setId(getGlobalId());
-        films.put(film.getId(),film );
+        films.put(film.getId(), film);
         return films.get(film.getId());
     }
 
-    public Film update(Film film){
-       return films.put(film.getId(), film);
+    public Film update(Film film) {
+        return films.put(film.getId(), film);
     }
 
-    public Film findById(int id){
+    public Film findById(int id) {
         return films.get(id);
     }
 
 
-    public void removeById(int id){
+    public void removeById(int id) {
         films.remove(id);
     }
 
-    public List<Film> findAll(){
+    public List<Film> findAll() {
         return new ArrayList<>(films.values());
     }
 
-    public void removeAll(){
+    public void removeAll() {
         films.clear();
         globalId = 0;
     }

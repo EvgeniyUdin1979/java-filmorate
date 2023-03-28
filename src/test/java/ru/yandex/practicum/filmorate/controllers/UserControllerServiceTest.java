@@ -52,9 +52,10 @@ class UserControllerServiceTest {
         ObjectMapper mapper = JsonMapper.builder()
                 .addModules(new JavaTimeModule())
                 .build();
-        switch (urlRequest){
+        switch (urlRequest) {
             case "/films":
-                List<Film> films = mapper.readValue(string,new TypeReference<List<Film>>() {});
+                List<Film> films = mapper.readValue(string, new TypeReference<List<Film>>() {
+                });
                 for (Film film : films) {
                     this.mockMvc.perform(post(urlRequest)
                             .content(mapper.writeValueAsString(film))
@@ -62,7 +63,8 @@ class UserControllerServiceTest {
                 }
                 break;
             case "/users":
-                List<User> users = mapper.readValue(string,new TypeReference<List<User>>() {});
+                List<User> users = mapper.readValue(string, new TypeReference<List<User>>() {
+                });
                 for (User user : users) {
                     this.mockMvc.perform(post(urlRequest)
                             .content(mapper.writeValueAsString(user))

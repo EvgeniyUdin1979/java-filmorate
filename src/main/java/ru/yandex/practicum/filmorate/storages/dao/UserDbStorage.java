@@ -37,10 +37,10 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User findById(int id) {
         try {
-            String sql ="SELECT ID,EMAIL,LOGIN,NAME,BIRTHDAY FROM USERS WHERE ID = :ID;";
+            String sql = "SELECT ID,EMAIL,LOGIN,NAME,BIRTHDAY FROM USERS WHERE ID = :ID;";
 
-            return jdbcTemplate.queryForObject(sql,Map.of("ID",id), new UserMapper());
-        }catch (EmptyResultDataAccessException e){
+            return jdbcTemplate.queryForObject(sql, Map.of("ID", id), new UserMapper());
+        } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
@@ -48,10 +48,10 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User create(User user) {
         SqlParameterSource param = new MapSqlParameterSource()
-                .addValue("EMAIL",user.getEmail())
-                .addValue("LOGIN",user.getLogin())
-                .addValue("NAME",user.getName())
-                .addValue("BIRTHDAY",user.getBirthday());
+                .addValue("EMAIL", user.getEmail())
+                .addValue("LOGIN", user.getLogin())
+                .addValue("NAME", user.getName())
+                .addValue("BIRTHDAY", user.getBirthday());
         SimpleJdbcInsert insert = new SimpleJdbcInsert(dataSource).withTableName("USERS")
                 .usingGeneratedKeyColumns("ID");
         int id = insert.executeAndReturnKey(param).intValue();
@@ -61,7 +61,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void removeById(int id) {
         String sql = "DELETE FROM USERS WHERE ID = :ID";
-        jdbcTemplate.update(sql,Map.of("ID",id));
+        jdbcTemplate.update(sql, Map.of("ID", id));
     }
 
     @Override
@@ -69,19 +69,19 @@ public class UserDbStorage implements UserStorage {
         String sql = "MERGE INTO USERS (ID,EMAIL,LOGIN,NAME,BIRTHDAY) " +
                 "VALUES (:ID,:EMAIL,:LOGIN,:NAME,:BIRTHDAY)";
         SqlParameterSource param = new MapSqlParameterSource()
-                .addValue("ID",user.getId())
-                .addValue("EMAIL",user.getEmail())
-                .addValue("LOGIN",user.getLogin())
-                .addValue("NAME",user.getName())
-                .addValue("BIRTHDAY",user.getBirthday());
-        jdbcTemplate.update(sql,param);
+                .addValue("ID", user.getId())
+                .addValue("EMAIL", user.getEmail())
+                .addValue("LOGIN", user.getLogin())
+                .addValue("NAME", user.getName())
+                .addValue("BIRTHDAY", user.getBirthday());
+        jdbcTemplate.update(sql, param);
 
         return findById(user.getId());
     }
 
     @Override
     public void removeAll() {
-        jdbcTemplate.update("DELETE FROM USERS; ALTER TABLE USERS ALTER COLUMN ID RESTART WITH 1;",Map.of());
+        jdbcTemplate.update("DELETE FROM USERS; ALTER TABLE USERS ALTER COLUMN ID RESTART WITH 1;", Map.of());
     }
 
 

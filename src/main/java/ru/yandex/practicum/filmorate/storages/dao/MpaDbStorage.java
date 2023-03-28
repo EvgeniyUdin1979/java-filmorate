@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+
 @Repository
 @Slf4j
 public class MpaDbStorage implements MpaStorage {
@@ -28,9 +29,9 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public Mpa findById(int id) {
-        try{
-            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM RATING WHERE ID = :ID;", Map.of("ID",id), new MpaMapper());
-        }catch (EmptyResultDataAccessException e){
+        try {
+            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM RATING WHERE ID = :ID;", Map.of("ID", id), new MpaMapper());
+        } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
@@ -38,7 +39,7 @@ public class MpaDbStorage implements MpaStorage {
     private static class MpaMapper implements RowMapper<Mpa> {
         @Override
         public Mpa mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return new Mpa(rs.getInt("ID"),rs.getString("NAME"));
+            return new Mpa(rs.getInt("ID"), rs.getString("NAME"));
         }
     }
 }

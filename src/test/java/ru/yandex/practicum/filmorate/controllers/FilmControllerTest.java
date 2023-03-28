@@ -49,9 +49,10 @@ class FilmControllerTest {
         ObjectMapper mapper = JsonMapper.builder()
                 .addModules(new JavaTimeModule())
                 .build();
-        switch (urlRequest){
+        switch (urlRequest) {
             case "/films":
-                List<Film> films = mapper.readValue(string,new TypeReference<List<Film>>() {});
+                List<Film> films = mapper.readValue(string, new TypeReference<List<Film>>() {
+                });
                 for (Film film : films) {
                     this.mockMvc.perform(post(urlRequest)
                             .content(mapper.writeValueAsString(film))
@@ -59,7 +60,8 @@ class FilmControllerTest {
                 }
                 break;
             case "/users":
-                List<User> users = mapper.readValue(string,new TypeReference<List<User>>() {});
+                List<User> users = mapper.readValue(string, new TypeReference<List<User>>() {
+                });
                 for (User user : users) {
                     this.mockMvc.perform(post(urlRequest)
                             .content(mapper.writeValueAsString(user))
@@ -246,7 +248,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void getPopularFilmsWithoutCount() throws Exception{
+    void getPopularFilmsWithoutCount() throws Exception {
         upData("src/test/resources/files/filmslist.txt", "/films");
         this.mockMvc.perform(get("/films/popular")
                         .header("Content-Type", "application/json; charset=utf-8"))

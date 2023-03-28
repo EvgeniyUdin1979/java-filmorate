@@ -46,20 +46,20 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = jdbcTemplate.query(sql, new FilmMapper());
         String sqlGenres = "SELECT FG.FILM_ID ,FG.GENRE_ID,G.NAME FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID\n" +
                 "WHERE FILM_ID IN (SELECT ID FROM FILM);";
-        HashMap<Integer, Set<Genre>>  map = new HashMap<>();
+        HashMap<Integer, Set<Genre>> map = new HashMap<>();
         jdbcTemplate.query(sqlGenres, rs -> {
-            Genre genre = new Genre(rs.getInt("GENRE_ID"),rs.getString("NAME"));
+            Genre genre = new Genre(rs.getInt("GENRE_ID"), rs.getString("NAME"));
             int key = rs.getInt("FILM_ID");
-            if (map.containsKey(key)){
+            if (map.containsKey(key)) {
                 map.get(key).add(genre);
-            }else {
+            } else {
                 Set<Genre> genres = new HashSet<>();
                 genres.add(genre);
-                map.put(key,genres);
+                map.put(key, genres);
             }
         });
         for (Film film : films) {
-            if (map.containsKey(film.getId())){
+            if (map.containsKey(film.getId())) {
                 film.getGenres().addAll(map.get(film.getId()));
             }
         }
@@ -88,7 +88,7 @@ public class FilmDbStorage implements FilmStorage {
                 @Override
                 public void processRow(ResultSet rs) throws SQLException {
                     film.getGenres()
-                            .add(new Genre(rs.getInt("GENRE_ID"),rs.getString("NAME")));
+                            .add(new Genre(rs.getInt("GENRE_ID"), rs.getString("NAME")));
                 }
             });
             return film;
@@ -109,7 +109,7 @@ public class FilmDbStorage implements FilmStorage {
         SimpleJdbcInsert insert = new SimpleJdbcInsert(dataSource).withTableName("FILM")
                 .usingGeneratedKeyColumns("ID");
         int id = insert.executeAndReturnKey(param).intValue();
-        addGenres(id,new ArrayList<>(film.getGenres()));
+        addGenres(id, new ArrayList<>(film.getGenres()));
         return findById(id);
     }
 
@@ -132,13 +132,13 @@ public class FilmDbStorage implements FilmStorage {
                 .addValue("LIKE_QUANTITY", film.getLikesQuantity())
                 .addValue("RATING_ID", film.getMpa().getId());
         jdbcTemplate.update(sql, param);
-        jdbcTemplate.update("DELETE FROM FILM_X_GENRE WHERE FILM_ID IN (SELECT FILM_ID FROM FILM_X_GENRE WHERE FILM_ID = :ID);", Map.of("ID",film.getId()));
-        addGenres(film.getId(),new ArrayList<>(film.getGenres()));
+        jdbcTemplate.update("DELETE FROM FILM_X_GENRE WHERE FILM_ID IN (SELECT FILM_ID FROM FILM_X_GENRE WHERE FILM_ID = :ID);", Map.of("ID", film.getId()));
+        addGenres(film.getId(), new ArrayList<>(film.getGenres()));
         return findById(film.getId());
     }
 
-    private void addGenres(int id,List<Genre> genres) {
-        if (genres.size() > 0){
+    private void addGenres(int id, List<Genre> genres) {
+        if (genres.size() > 0) {
             StringBuilder sqlGenres = new StringBuilder("INSERT INTO FILM_X_GENRE (FILM_ID,GENRE_ID) VALUES ");
             for (Genre genre : genres) {
                 sqlGenres.append("(:ID,").append(genre.getId()).append("),");
@@ -150,7 +150,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void removeAll() {
-        jdbcTemplate.update("DELETE FROM FILM; ALTER TABLE FILM ALTER COLUMN ID RESTART WITH 1",Map.of());
+        jdbcTemplate.update("DELETE FROM FILM; ALTER TABLE FILM ALTER COLUMN ID RESTART WITH 1", Map.of());
     }
 
     private static class FilmMapper implements RowMapper<Film> {
@@ -163,7 +163,7 @@ public class FilmDbStorage implements FilmStorage {
                     rs.getDate("FILM_RELEASE_DATE").toLocalDate(),
                     rs.getInt("FILM_DURATION"),
                     rs.getInt("FILM_LIKE_QUANTITY"),
-                    new Mpa(rs.getInt("RATING_ID"),rs.getString("RATING_NAME")));
+                    new Mpa(rs.getInt("RATING_ID"), rs.getString("RATING_NAME")));
             return film;
         }
     }

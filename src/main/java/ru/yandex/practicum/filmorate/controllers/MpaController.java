@@ -24,13 +24,13 @@ public class MpaController {
     }
 
     @GetMapping
-    public List<Mpa> getAllMpa(){
+    public List<Mpa> getAllMpa() {
         log.info("Получены все рейтинги.");
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public Mpa getMpaById(@PathVariable int id){
+    public Mpa getMpaById(@PathVariable int id) {
         log.info("Получены все рейтинги.");
         return service.findById(id);
     }

@@ -22,7 +22,7 @@ public class User {
     @Email(message = "Не корректный Email!")
     private final String email;
 
-//    @NotBlank(message = "Логин не может быть пустым, отсутствовать или состоять только из пробелов!")
+    //    @NotBlank(message = "Логин не может быть пустым, отсутствовать или состоять только из пробелов!")
     @Pattern(regexp = "^\\w+$", message = "Логин может состоять только из латинских букв и подчеркивания. Логин не может быть пустым, отсутствовать или состоять только из пробелов!")
     private final String login;
     private String name;
@@ -35,10 +35,10 @@ public class User {
 
     @JsonCreator
     public User(@JsonProperty("id") int id,
-                @JsonProperty("email")String email,
-                @JsonProperty("login")String login,
-                @JsonProperty("name")String name,
-                @JsonProperty("birthday")LocalDate birthday) {
+                @JsonProperty("email") String email,
+                @JsonProperty("login") String login,
+                @JsonProperty("name") String name,
+                @JsonProperty("birthday") LocalDate birthday) {
         this.id = id;
         this.email = email;
         this.login = login;

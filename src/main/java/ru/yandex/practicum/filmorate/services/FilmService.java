@@ -23,38 +23,38 @@ public class FilmService {
     private final UserService userService;
 
     @Autowired
-    public FilmService(@Qualifier("filmDAO")FilmStorage filmStorage,UserService userService) {
+    public FilmService(@Qualifier("filmDAO") FilmStorage filmStorage, UserService userService) {
         this.filmStorage = filmStorage;
         this.userService = userService;
     }
 
-    public List<Film> findAll(){
+    public List<Film> findAll() {
         return filmStorage.findAll();
     }
 
-    public Film findById(String id){
+    public Film findById(String id) {
         return findFilmById(validateAndParseInt(id));
     }
 
-    public Film add(Film film){
+    public Film add(Film film) {
         if (film.getId() != 0) {
             String message = String.format("Для добавления фильма не нужно указывать id. Текущий id: %d", film.getId());
             log.info(message, film);
             throw new FilmRequestException(message);
         }
-       return filmStorage.create(film);
+        return filmStorage.create(film);
     }
 
-    public Film update(Film film){
+    public Film update(Film film) {
         findFilmById(film.getId());
-       return filmStorage.update(film);
+        return filmStorage.update(film);
     }
 
-    public void removeAll(){
+    public void removeAll() {
         filmStorage.removeAll();
     }
 
-    public void addLike(String userId,String filmId){
+    public void addLike(String userId, String filmId) {
         Film film = findFilmById(validateAndParseInt(filmId));
         User user = userService.findById(userId);
         film.getLikesId().add(user.getId());
@@ -62,7 +62,7 @@ public class FilmService {
         filmStorage.update(film);
     }
 
-    public void removeLike(String userId,String filmId){
+    public void removeLike(String userId, String filmId) {
         Film film = findFilmById(validateAndParseInt(filmId));
         User user = userService.findById(userId);
         film.getLikesId().remove(user.getId());
@@ -70,14 +70,14 @@ public class FilmService {
         filmStorage.update(film);
     }
 
-    public List<Film> mostPopularFilm(int count){
+    public List<Film> mostPopularFilm(int count) {
         return filmStorage.findAll().stream()
                 .sorted((o1, o2) -> o2.getLikesQuantity() - o1.getLikesQuantity())
                 .limit(count)
                 .collect(Collectors.toList());
     }
 
-    public List<Film> mostPopularFilm(){
+    public List<Film> mostPopularFilm() {
         return mostPopularFilm(10);
     }
 
@@ -91,9 +91,9 @@ public class FilmService {
         }
     }
 
-    private Film findFilmById(int id){
+    private Film findFilmById(int id) {
         Film user = filmStorage.findById(id);
-        if (user == null){
+        if (user == null) {
             String message = String.format("Фильм с данным id: %d, не найден", id);
             log.info(message);
             throw new FilmRequestException(message, HttpStatus.NOT_FOUND);

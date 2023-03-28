@@ -26,8 +26,8 @@ public class MpaService {
 
     public Mpa findById(int id) {
         Mpa mpa = storage.findById(id);
-        if (mpa == null){
-            throw new FilmRequestException("Рейтинга с данным id " + id +"  не существует!", HttpStatus.NOT_FOUND);
+        if (mpa == null) {
+            throw new FilmRequestException("Рейтинга с данным id " + id + "  не существует!", HttpStatus.NOT_FOUND);
         }
         return mpa;
     }

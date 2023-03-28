@@ -24,7 +24,6 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-//@RunWith(SpringRunner.class)
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK/*,
         classes = Application.class*/)
@@ -35,7 +34,7 @@ public class FilmControllerWithMpaAndGenreTest {
     private final MockMvc mockMvc;
 
     @Autowired
-    FilmControllerWithMpaAndGenreTest( WebApplicationContext wac) {
+    FilmControllerWithMpaAndGenreTest(WebApplicationContext wac) {
 
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .addFilter(((request, response, chain) -> {
@@ -83,7 +82,7 @@ public class FilmControllerWithMpaAndGenreTest {
 
     @Test
     void getMpaId1() throws Exception {
-        this.mockMvc.perform(get("/mpa/{id}",1))
+        this.mockMvc.perform(get("/mpa/{id}", 1))
                 .andExpectAll(
                         status().isOk(),
                         content().contentType("application/json;charset=UTF-8"),
@@ -94,7 +93,7 @@ public class FilmControllerWithMpaAndGenreTest {
 
     @Test
     void getMpaId99() throws Exception {
-        this.mockMvc.perform(get("/mpa/{id}",99))
+        this.mockMvc.perform(get("/mpa/{id}", 99))
                 .andExpectAll(
                         status().isNotFound(),
                         content().contentType("application/json;charset=UTF-8"),
@@ -119,7 +118,7 @@ public class FilmControllerWithMpaAndGenreTest {
 
     @Test
     void getGenreId1() throws Exception {
-        this.mockMvc.perform(get("/genres/{id}",1))
+        this.mockMvc.perform(get("/genres/{id}", 1))
                 .andExpectAll(
                         status().isOk(),
                         content().contentType("application/json;charset=UTF-8"),
@@ -130,7 +129,7 @@ public class FilmControllerWithMpaAndGenreTest {
 
     @Test
     void getGenreId99() throws Exception {
-        this.mockMvc.perform(get("/genres/{id}",99))
+        this.mockMvc.perform(get("/genres/{id}", 99))
                 .andExpectAll(
                         status().isNotFound(),
                         content().contentType("application/json;charset=UTF-8"),
@@ -167,9 +166,9 @@ public class FilmControllerWithMpaAndGenreTest {
                 "  \"genres\": [{ \"id\": 2}]\n" +
                 "}";
 
-        this.mockMvc.perform(put("/films",1)
+        this.mockMvc.perform(put("/films", 1)
                 .content(json).contentType("application/json;charset=UTF-8"));
-        this.mockMvc.perform(get("/films/{id}",1))
+        this.mockMvc.perform(get("/films/{id}", 1))
                 .andExpectAll(
                         status().isOk(),
                         content().contentType("application/json;charset=UTF-8"),
@@ -193,9 +192,9 @@ public class FilmControllerWithMpaAndGenreTest {
                 "  \"genres\": [{ \"id\": 1}, { \"id\": 2}, { \"id\": 1}]\n" +
                 "}";
 
-        this.mockMvc.perform(put("/films",1)
+        this.mockMvc.perform(put("/films", 1)
                 .content(json).contentType(MediaType.APPLICATION_JSON));
-        this.mockMvc.perform(get("/films/{id}",1))
+        this.mockMvc.perform(get("/films/{id}", 1))
                 .andExpectAll(
                         status().isOk(),
                         content().contentType("application/json;charset=UTF-8"),

@@ -22,23 +22,25 @@ public class GenreDbStorage implements GenreStorage {
     public GenreDbStorage(NamedParameterJdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+
     @Override
     public List<Genre> findAll() {
-        return jdbcTemplate.query("SELECT ID, NAME FROM GENRE ORDER BY ID;", Map.of(),new GenreMapper());
+        return jdbcTemplate.query("SELECT ID, NAME FROM GENRE ORDER BY ID;", Map.of(), new GenreMapper());
     }
 
     @Override
     public Genre findById(int id) {
         try {
-            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM GENRE WHERE ID = :ID ;", Map.of("ID",id),new GenreMapper());
-        }catch (EmptyResultDataAccessException e){
+            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM GENRE WHERE ID = :ID ;", Map.of("ID", id), new GenreMapper());
+        } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
+
     private class GenreMapper implements RowMapper<Genre> {
         @Override
         public Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return new Genre(rs.getInt("ID"),rs.getString("NAME"));
+            return new Genre(rs.getInt("ID"), rs.getString("NAME"));
         }
     }
 }

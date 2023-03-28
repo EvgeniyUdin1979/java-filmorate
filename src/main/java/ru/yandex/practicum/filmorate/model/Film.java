@@ -45,7 +45,6 @@ public class Film {
 
     private final Set<Genre> genres = new HashSet<>();
 
-
     @JsonCreator
     public Film(@JsonProperty("id") int id,
                 @JsonProperty("name") String name,

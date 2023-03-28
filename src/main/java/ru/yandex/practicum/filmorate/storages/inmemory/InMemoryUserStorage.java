@@ -24,7 +24,7 @@ public class InMemoryUserStorage implements UserStorage {
     public User create(User user) throws FilmRequestException {
         user.setId(getGlobalId());
         users.put(user.getId(), user);
-       return users.get(user.getId());
+        return users.get(user.getId());
     }
 
     @Override
@@ -33,7 +33,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     public User update(User user) {
-       return users.put(user.getId(), user);
+        return users.put(user.getId(), user);
     }
 
     public User findById(int id) {
@@ -44,11 +44,10 @@ public class InMemoryUserStorage implements UserStorage {
         return new ArrayList<>(users.values());
     }
 
-    public void removeAll(){
+    public void removeAll() {
         users.clear();
         globalId = 0;
     }
-
 
 
     private int getGlobalId() {
