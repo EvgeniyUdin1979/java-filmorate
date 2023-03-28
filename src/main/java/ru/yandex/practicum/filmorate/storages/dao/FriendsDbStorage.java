@@ -46,11 +46,11 @@ public class FriendsDbStorage implements FriendsStorage {
     }
 
     @Override
-    public List<Integer> common(int userId_1, int user_id_2) {
+    public List<Integer> common(int userId1, int userId2) {
         String sql = "SELECT F2.USER_ID_2 FROM FRIENDS F2 \n" +
                 "WHERE USER_ID_1 = :USER_ID_2 AND USER_ID_2  IN  (SELECT F1.USER_ID_2 FROM FRIENDS F1 \n" +
                 "WHERE USER_ID_1 = :USER_ID_1) ";
-        return jdbcTemplate.queryForList(sql, Map.of("USER_ID_1", userId_1, "USER_ID_2", user_id_2), Integer.class);
+        return jdbcTemplate.queryForList(sql, Map.of("USER_ID_1", userId1, "USER_ID_2", userId2), Integer.class);
 
 
     }
