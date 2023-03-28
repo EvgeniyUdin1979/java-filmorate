@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.storages.UserStorage;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +39,7 @@ public class UserDbStorage implements UserStorage {
         try {
             String sql ="SELECT ID,EMAIL,LOGIN,NAME,BIRTHDAY FROM USERS WHERE ID = :ID;";
 
-            return jdbcTemplate.queryForObject(sql,Map.of("ID",id),new UserMapper());
+            return jdbcTemplate.queryForObject(sql,Map.of("ID",id), new UserMapper());
         }catch (EmptyResultDataAccessException e){
             return null;
         }
@@ -76,55 +75,27 @@ public class UserDbStorage implements UserStorage {
                 .addValue("NAME",user.getName())
                 .addValue("BIRTHDAY",user.getBirthday());
         jdbcTemplate.update(sql,param);
-        friends(user.getId(), new ArrayList<>(user.getFriendsId()));
 
         return findById(user.getId());
     }
 
-    private void friends(int id, List<Integer> friends){
-        String sql = "SELECT USER_ID_2 FROM FRIENDS WHERE USER_ID_1 = :ID";
-        List<Integer> oldFriends =  jdbcTemplate.queryForList(sql, Map.of("ID", id),Integer.class);
-        if (oldFriends.size() < friends.size()){
-            friends.removeAll(oldFriends);
-            for (int friend : friends) {
-                SqlParameterSource param = new MapSqlParameterSource()
-                        .addValue("USER_ID_1",id)
-                        .addValue("USER_ID_2",friend)
-                        .addValue("FRIENDSHIP","FALSE");
-                jdbcTemplate.update("MERGE INTO FRIENDS (USER_ID_1,USER_ID_2,FRIENDSHIP) " +
-                        "VALUES(:USER_ID_1,:USER_ID_2,:FRIENDSHIP)",param);
-            }
-        }else {
-            oldFriends.removeAll(friends);
-            for (Integer friend : oldFriends) {
-                jdbcTemplate.update("DELETE FROM FRIENDS WHERE USER_ID_1 = :ID AND USER_ID_2 = :FRIEND",Map.of("ID",id,"FRIEND",friend));
-            }
-        }
-    }
-
     @Override
     public void removeAll() {
-        jdbcTemplate.update("DELETE FROM USERS; ALTER TABLE USERS ALTER COLUMN ID RESTART WITH 1",Map.of());
+        jdbcTemplate.update("DELETE FROM USERS; ALTER TABLE USERS ALTER COLUMN ID RESTART WITH 1;",Map.of());
     }
 
 
-    private class UserMapper implements RowMapper<User> {
+    private static class UserMapper implements RowMapper<User> {
         @Override
         public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-            User user = new User(
+            return new User(
                     rs.getInt("ID"),
                     rs.getString("EMAIL"),
                     rs.getString("LOGIN"),
                     rs.getString("NAME"),
                     rs.getDate("BIRTHDAY").toLocalDate()
             );
-            user.getFriendsId().addAll(getFriends(user.getId()));
-            return user;
         }
 
-        private List<Integer> getFriends(int id) {
-            String sql = "SELECT USER_ID_2 FROM FRIENDS WHERE USER_ID_1 = :ID";
-            return jdbcTemplate.queryForList(sql, Map.of("ID", id),Integer.class);
-        }
     }
 }

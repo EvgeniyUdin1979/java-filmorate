@@ -1,0 +1,16 @@
+package ru.yandex.practicum.filmorate.storages;
+
+import java.util.List;
+
+public interface FriendsStorage {
+
+    void add(int userId, int friendId);
+
+    void remove(int userId, int friendId);
+
+    boolean isFriends(int userId, int friendId);
+
+    List<Integer> common(int userId, int friendId);
+
+    List<Integer> findAllById(int id);
+}

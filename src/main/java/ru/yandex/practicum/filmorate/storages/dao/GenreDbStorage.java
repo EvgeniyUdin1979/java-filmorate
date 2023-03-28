@@ -24,13 +24,13 @@ public class GenreDbStorage implements GenreStorage {
     }
     @Override
     public List<Genre> findAll() {
-        return jdbcTemplate.query("SELECT ID, NAME FROM GENRE;", Map.of(),new GenreMapper());
+        return jdbcTemplate.query("SELECT ID, NAME FROM GENRE ORDER BY ID;", Map.of(),new GenreMapper());
     }
 
     @Override
     public Genre findById(int id) {
         try {
-            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM GENRE WHERE ID = :ID;", Map.of("ID",id),new GenreMapper());
+            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM GENRE WHERE ID = :ID ;", Map.of("ID",id),new GenreMapper());
         }catch (EmptyResultDataAccessException e){
             return null;
         }

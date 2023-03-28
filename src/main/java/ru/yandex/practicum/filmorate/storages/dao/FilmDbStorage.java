@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storages.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -16,10 +17,7 @@ import ru.yandex.practicum.filmorate.storages.FilmStorage;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Repository("filmDAO")
 public class FilmDbStorage implements FilmStorage {
@@ -35,26 +33,72 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> findAll() {
-        String sql = "SELECT ID,NAME,DESCRIPTION,RELEASE_DATE,DURATION,LIKE_QUANTITY,RATING_ID  FROM FILM;";
+        String sql = "SELECT F.ID AS FILM_ID,\n" +
+                "F.NAME AS FILM_NAME,\n" +
+                "F.DESCRIPTION AS FILM_DESCRIPTION, \n" +
+                "F.RELEASE_DATE AS FILM_RELEASE_DATE, \n" +
+                "F.DURATION AS FILM_DURATION, \n" +
+                "F.LIKE_QUANTITY AS FILM_LIKE_QUANTITY,\n" +
+                "R.ID AS RATING_ID,\n" +
+                "R.NAME AS RATING_NAME \n" +
+                "FROM FILM F\n" +
+                "JOIN RATING R ON R.ID = F.RATING_ID;";
         List<Film> films = jdbcTemplate.query(sql, new FilmMapper());
+        String sqlGenres = "SELECT FG.FILM_ID ,FG.GENRE_ID,G.NAME FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID\n" +
+                "WHERE FILM_ID IN (SELECT ID FROM FILM);";
+        HashMap<Integer, Set<Genre>>  map = new HashMap<>();
+        jdbcTemplate.query(sqlGenres, rs -> {
+            Genre genre = new Genre(rs.getInt("GENRE_ID"),rs.getString("NAME"));
+            int key = rs.getInt("FILM_ID");
+            if (map.containsKey(key)){
+                map.get(key).add(genre);
+            }else {
+                Set<Genre> genres = new HashSet<>();
+                genres.add(genre);
+                map.put(key,genres);
+            }
+        });
+        for (Film film : films) {
+            if (map.containsKey(film.getId())){
+                film.getGenres().addAll(map.get(film.getId()));
+            }
+        }
         return films;
     }
 
     @Override
     public Film findById(int id) {
         try {
-            String sql = "SELECT ID,NAME,DESCRIPTION,RELEASE_DATE,DURATION,LIKE_QUANTITY,RATING_ID  FROM FILM WHERE ID = :ID;";
-            return jdbcTemplate.queryForObject(sql, Map.of("ID", id), new FilmMapper());
+            String sql = "SELECT " +
+                    "F.ID AS FILM_ID," +
+                    "F.NAME AS FILM_NAME," +
+                    "F.DESCRIPTION AS FILM_DESCRIPTION, " +
+                    "F.RELEASE_DATE AS FILM_RELEASE_DATE, " +
+                    "F.DURATION AS FILM_DURATION, " +
+                    "F.LIKE_QUANTITY AS FILM_LIKE_QUANTITY, " +
+                    "R.ID AS RATING_ID," +
+                    "R.NAME AS RATING_NAME " +
+                    "FROM FILM F " +
+                    "JOIN RATING R ON R.ID = F.RATING_ID " +
+                    "WHERE F.ID = :ID;";
+            Film film = jdbcTemplate.queryForObject(sql, Map.of("ID", id), new FilmMapper());
+            String sqlGenres = "SELECT FG.FILM_ID ,FG.GENRE_ID,G.NAME FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID " +
+                    "WHERE FILM_ID =:ID;";
+            jdbcTemplate.query(sqlGenres, Map.of("ID", id), new RowCallbackHandler() {
+                @Override
+                public void processRow(ResultSet rs) throws SQLException {
+                    film.getGenres()
+                            .add(new Genre(rs.getInt("GENRE_ID"),rs.getString("NAME")));
+                }
+            });
+            return film;
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
-
     }
 
     @Override
     public Film create(Film film) {
-        String sql = "INSERT INTO FILM (NAME,DESCRIPTION,RELEASE_DATE,DURATION,LIKE_QUANTITY,RATING_ID)" +
-                " VALUES (:NAME,:DESCRIPTION,:RELEASE_DATE,:DURATION,:LIKE_QUANTITY,:RATING_ID)";
         SqlParameterSource param = new MapSqlParameterSource()
                 .addValue("NAME", film.getName())
                 .addValue("DESCRIPTION", film.getDescription())
@@ -104,38 +148,23 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-
-
     @Override
     public void removeAll() {
         jdbcTemplate.update("DELETE FROM FILM; ALTER TABLE FILM ALTER COLUMN ID RESTART WITH 1",Map.of());
     }
 
-    private class FilmMapper implements RowMapper<Film> {
+    private static class FilmMapper implements RowMapper<Film> {
 
         @Override
         public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Film film = new Film(rs.getInt("ID"),
-                    rs.getString("NAME"),
-                    rs.getString("DESCRIPTION"),
-                    rs.getDate("RELEASE_DATE").toLocalDate(),
-                    rs.getInt("DURATION"),
-                    rs.getInt("LIKE_QUANTITY"),
-                    getMpa(rs.getInt("RATING_ID")));
-            film.getLikesId().addAll(jdbcTemplate.queryForList("SELECT USER_ID FROM LIKES WHERE FILM_ID =:ID",
-                    Map.of("ID", film.getId()),
-                    Integer.class));
-            film.getGenres().addAll(jdbcTemplate
-                    .queryForList("SELECT FG.GENRE_ID AS id, G.NAME AS name FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID WHERE FG.FILM_ID = :ID ",
-                            Map.of("ID", film.getId())).stream().map(som -> new Genre((int) som.get("id"), (String) som.get("name"))).collect(Collectors.toList()));
+            Film film = new Film(rs.getInt("FILM_ID"),
+                    rs.getString("FILM_NAME"),
+                    rs.getString("FILM_DESCRIPTION"),
+                    rs.getDate("FILM_RELEASE_DATE").toLocalDate(),
+                    rs.getInt("FILM_DURATION"),
+                    rs.getInt("FILM_LIKE_QUANTITY"),
+                    new Mpa(rs.getInt("RATING_ID"),rs.getString("RATING_NAME")));
             return film;
         }
-
-        private Mpa getMpa(int id) {
-            String sql = "SELECT * FROM RATING WHERE ID =:ID";
-            return jdbcTemplate.queryForObject(sql, Map.of("ID", id), (rs, rowNum) -> new Mpa(rs.getInt("ID"), rs.getString("NAME")));
-        }
-
     }
-
 }

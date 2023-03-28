@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storages.FriendsStorage;
 import ru.yandex.practicum.filmorate.storages.UserStorage;
 
 import java.util.List;
@@ -16,10 +17,12 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserStorage users;
+    private final FriendsStorage friends;
 
     @Autowired
-    public UserService(@Qualifier("userDAO")UserStorage users) {
+    public UserService(@Qualifier("userDAO")UserStorage users, FriendsStorage friends) {
         this.users = users;
+        this.friends = friends;
     }
 
     public List<User> findAll(){
@@ -51,44 +54,41 @@ public class UserService {
         findUserById(user.getId());
        return users.update(user);
     }
+
     public void removeAll(){
         users.removeAll();
     }
 
-
-
-
-
     public List<User> findFriends(String userId){
-        return findUserById(validateAndParseInt(userId)).getFriendsId()
-                .stream()
-                .map(users::findById)
-                .collect(Collectors.toList());
+        int user = validateAndParseInt(userId);
+        findUserById(user);
+        return friends.findAllById(user)
+                .stream().map(users::findById).collect(Collectors.toList());
     }
 
     public List<User> findCommonFriends(String userId, String forSearchId){
-        User user = findUserById(validateAndParseInt(userId));
-        User forSearch = findUserById(validateAndParseInt(forSearchId));
-        return user.getFriendsId().stream()
-                .filter(id ->forSearch.getFriendsId().contains(id))
-                .map(users::findById)
-                .collect(Collectors.toList());
+        int user = validateAndParseInt(userId);
+        int friend = validateAndParseInt(forSearchId);
+        findUserById(user);
+        findUserById(friend);
+        return friends.common(user,friend)
+                .stream().map(users::findById).collect(Collectors.toList());
     }
 
     public void addFriend(String userId, String friendId){
-        User user = findUserById(validateAndParseInt(userId));
-        User friend = findUserById(validateAndParseInt(friendId));
-        user.getFriendsId().add(friend.getId());
-        friend.getFriendsId().add(user.getId());
-        users.update(user);
+        int user = validateAndParseInt(userId);
+        int friend = validateAndParseInt(friendId);
+        findUserById(user);
+        findUserById(friend);
+        friends.add(user,friend);
     }
 
     public void removeFriend(String userId, String friendId){
-        User user = findUserById(validateAndParseInt(userId));
-        User friend = findUserById(validateAndParseInt(friendId));
-        user.getFriendsId().remove(friend.getId());
-        friend.getFriendsId().remove(user.getId());
-        users.update(user);
+        int user = validateAndParseInt(userId);
+        int friend = validateAndParseInt(friendId);
+        findUserById(user);
+        findUserById(friend);
+        friends.remove(user,friend);
     }
 
     private int validateAndParseInt(String id) {

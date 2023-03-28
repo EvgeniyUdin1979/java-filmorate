@@ -23,19 +23,19 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public List<Mpa> findAll() {
-        return jdbcTemplate.query("SELECT ID, NAME FROM RATING;", Map.of(),new MpaMapper());
+        return jdbcTemplate.query("SELECT ID, NAME FROM RATING ORDER BY ID;", Map.of(), new MpaMapper());
     }
 
     @Override
     public Mpa findById(int id) {
         try{
-            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM RATING WHERE ID = :ID;", Map.of("ID",id),new MpaMapper());
+            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM RATING WHERE ID = :ID;", Map.of("ID",id), new MpaMapper());
         }catch (EmptyResultDataAccessException e){
             return null;
         }
     }
 
-    private class MpaMapper implements RowMapper<Mpa> {
+    private static class MpaMapper implements RowMapper<Mpa> {
         @Override
         public Mpa mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new Mpa(rs.getInt("ID"),rs.getString("NAME"));
