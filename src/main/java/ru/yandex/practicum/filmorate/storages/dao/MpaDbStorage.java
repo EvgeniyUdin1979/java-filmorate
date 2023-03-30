@@ -14,7 +14,7 @@ import java.util.Map;
 @Repository
 @Slf4j
 public class MpaDbStorage implements MpaStorage {
-    
+
     private static final RowMapper<Mpa> MPA_ROW_MAPPER = (rs, rowNum) -> new Mpa(rs.getInt("ID"), rs.getString("NAME"));
     NamedParameterJdbcTemplate jdbcTemplate;
 

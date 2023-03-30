@@ -146,12 +146,11 @@ public class FilmDbStorage implements FilmStorage {
 
     private void addGenres(int id, List<Genre> genres) {
         if (genres.size() > 0) {
-            StringBuilder sqlGenres = new StringBuilder("INSERT INTO FILM_X_GENRE (FILM_ID,GENRE_ID) VALUES ");
-            for (Genre genre : genres) {
-                sqlGenres.append("(:ID,").append(genre.getId()).append("),");
+            Map<String, Integer>[] maps = new Map[genres.size()];
+            for (int i = 0; i < genres.size(); i++) {
+                maps[i] = Map.of("ID", genres.get(i).getId());
             }
-            sqlGenres.replace(sqlGenres.length() - 1, sqlGenres.length(), ";");
-            jdbcTemplate.update(sqlGenres.toString(), Map.of("ID", id));
+            jdbcTemplate.batchUpdate(String.format("INSERT INTO FILM_X_GENRE (FILM_ID,GENRE_ID) VALUES (%d,:ID)", id), maps);
         }
     }
 

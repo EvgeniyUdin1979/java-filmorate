@@ -16,7 +16,7 @@ import java.util.Map;
 @Repository
 @Slf4j
 public class GenreDbStorage implements GenreStorage {
-    private static final RowMapper<Genre>GENRE_ROW_MAPPER = (rs, rowNum) -> new Genre(rs.getInt("ID"), rs.getString("NAME"));
+    private static final RowMapper<Genre> GENRE_ROW_MAPPER = (rs, rowNum) -> new Genre(rs.getInt("ID"), rs.getString("NAME"));
     NamedParameterJdbcTemplate jdbcTemplate;
 
     public GenreDbStorage(NamedParameterJdbcTemplate jdbcTemplate) {
