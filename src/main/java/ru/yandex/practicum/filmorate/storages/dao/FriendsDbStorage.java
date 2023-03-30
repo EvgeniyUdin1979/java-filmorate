@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storages.dao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.FriendsStorage;
 
 import java.util.List;
@@ -46,11 +47,10 @@ public class FriendsDbStorage implements FriendsStorage {
     }
 
     @Override
-    public List<Integer> common(int userId1, int userId2) {
-        String sql = "SELECT F2.USER_ID_2 FROM FRIENDS F2 \n" +
-                "WHERE USER_ID_1 = :USER_ID_2 AND USER_ID_2  IN  (SELECT F1.USER_ID_2 FROM FRIENDS F1 \n" +
-                "WHERE USER_ID_1 = :USER_ID_1) ";
-        return jdbcTemplate.queryForList(sql, Map.of("USER_ID_1", userId1, "USER_ID_2", userId2), Integer.class);
+    public List<User> common(int userId1, int userId2) {
+        String sql = "select * from USERS u, FRIENDS f, FRIENDS o \n" +
+                "       where u.ID = f.USER_ID_2 AND u.ID = o.USER_ID_2 AND f.USER_ID_1= 1 AND o.USER_ID_1 = 2";
+        return jdbcTemplate.query(sql, Map.of("USER_ID_1", userId1, "USER_ID_2", userId2), UserDbStorage.USER_ROW_MAPPER);
 
 
     }

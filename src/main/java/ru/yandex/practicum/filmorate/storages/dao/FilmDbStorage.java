@@ -21,6 +21,13 @@ import java.util.*;
 
 @Repository("filmDAO")
 public class FilmDbStorage implements FilmStorage {
+    private static final RowMapper<Film> FILM_ROW_MAPPER = (rs, rowNum) -> new Film(rs.getInt("FILM_ID"),
+            rs.getString("FILM_NAME"),
+            rs.getString("FILM_DESCRIPTION"),
+            rs.getDate("FILM_RELEASE_DATE").toLocalDate(),
+            rs.getInt("FILM_DURATION"),
+            rs.getInt("FILM_LIKE_QUANTITY"),
+            new Mpa(rs.getInt("RATING_ID"), rs.getString("RATING_NAME")));
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final DataSource dataSource;
@@ -43,7 +50,7 @@ public class FilmDbStorage implements FilmStorage {
                 "R.NAME AS RATING_NAME \n" +
                 "FROM FILM F\n" +
                 "JOIN RATING R ON R.ID = F.RATING_ID;";
-        List<Film> films = jdbcTemplate.query(sql, new FilmMapper());
+        List<Film> films = jdbcTemplate.query(sql, FILM_ROW_MAPPER);
         String sqlGenres = "SELECT FG.FILM_ID ,FG.GENRE_ID,G.NAME FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID\n" +
                 "WHERE FILM_ID IN (SELECT ID FROM FILM);";
         HashMap<Integer, Set<Genre>> map = new HashMap<>();
@@ -81,7 +88,7 @@ public class FilmDbStorage implements FilmStorage {
                     "FROM FILM F " +
                     "JOIN RATING R ON R.ID = F.RATING_ID " +
                     "WHERE F.ID = :ID;";
-            Film film = jdbcTemplate.queryForObject(sql, Map.of("ID", id), new FilmMapper());
+            Film film = jdbcTemplate.queryForObject(sql, Map.of("ID", id), FILM_ROW_MAPPER);
             String sqlGenres = "SELECT FG.FILM_ID ,FG.GENRE_ID,G.NAME FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID " +
                     "WHERE FILM_ID =:ID;";
             jdbcTemplate.query(sqlGenres, Map.of("ID", id), new RowCallbackHandler() {
@@ -153,18 +160,17 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update("DELETE FROM FILM; ALTER TABLE FILM ALTER COLUMN ID RESTART WITH 1", Map.of());
     }
 
-    private static class FilmMapper implements RowMapper<Film> {
+    static class FilmMapper implements RowMapper<Film> {
 
         @Override
         public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
-            Film film = new Film(rs.getInt("FILM_ID"),
+            return new Film(rs.getInt("FILM_ID"),
                     rs.getString("FILM_NAME"),
                     rs.getString("FILM_DESCRIPTION"),
                     rs.getDate("FILM_RELEASE_DATE").toLocalDate(),
                     rs.getInt("FILM_DURATION"),
                     rs.getInt("FILM_LIKE_QUANTITY"),
                     new Mpa(rs.getInt("RATING_ID"), rs.getString("RATING_NAME")));
-            return film;
         }
     }
 }

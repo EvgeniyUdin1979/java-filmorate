@@ -12,13 +12,17 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.UserStorage;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
 @Repository("userDAO")
 public class UserDbStorage implements UserStorage {
+     static final RowMapper<User> USER_ROW_MAPPER = (rs, rowNum) -> new User(
+            rs.getInt("ID"),
+            rs.getString("EMAIL"),
+            rs.getString("LOGIN"),
+            rs.getString("NAME"),
+            rs.getDate("BIRTHDAY").toLocalDate());
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final DataSource dataSource;
 
@@ -31,7 +35,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> findAll() {
         String sql = "SELECT ID,EMAIL,LOGIN,NAME,BIRTHDAY FROM USERS";
-        return jdbcTemplate.query(sql, new UserMapper());
+        return jdbcTemplate.query(sql, USER_ROW_MAPPER);
     }
 
     @Override
@@ -39,7 +43,7 @@ public class UserDbStorage implements UserStorage {
         try {
             String sql = "SELECT ID,EMAIL,LOGIN,NAME,BIRTHDAY FROM USERS WHERE ID = :ID;";
 
-            return jdbcTemplate.queryForObject(sql, Map.of("ID", id), new UserMapper());
+            return jdbcTemplate.queryForObject(sql, Map.of("ID", id), USER_ROW_MAPPER);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -82,20 +86,5 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void removeAll() {
         jdbcTemplate.update("DELETE FROM USERS; ALTER TABLE USERS ALTER COLUMN ID RESTART WITH 1;", Map.of());
-    }
-
-
-    private static class UserMapper implements RowMapper<User> {
-        @Override
-        public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return new User(
-                    rs.getInt("ID"),
-                    rs.getString("EMAIL"),
-                    rs.getString("LOGIN"),
-                    rs.getString("NAME"),
-                    rs.getDate("BIRTHDAY").toLocalDate()
-            );
-        }
-
     }
 }

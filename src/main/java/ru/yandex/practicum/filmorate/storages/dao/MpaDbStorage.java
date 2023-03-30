@@ -8,14 +8,14 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storages.MpaStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
 @Repository
 @Slf4j
 public class MpaDbStorage implements MpaStorage {
+    
+    private static final RowMapper<Mpa> MPA_ROW_MAPPER = (rs, rowNum) -> new Mpa(rs.getInt("ID"), rs.getString("NAME"));
     NamedParameterJdbcTemplate jdbcTemplate;
 
     public MpaDbStorage(NamedParameterJdbcTemplate jdbcTemplate) {
@@ -24,22 +24,16 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public List<Mpa> findAll() {
-        return jdbcTemplate.query("SELECT ID, NAME FROM RATING ORDER BY ID;", Map.of(), new MpaMapper());
+        return jdbcTemplate.query("SELECT ID, NAME FROM RATING ORDER BY ID;", Map.of(), MPA_ROW_MAPPER);
     }
 
     @Override
     public Mpa findById(int id) {
         try {
-            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM RATING WHERE ID = :ID;", Map.of("ID", id), new MpaMapper());
+            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM RATING WHERE ID = :ID;", Map.of("ID", id), MPA_ROW_MAPPER);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
 
-    private static class MpaMapper implements RowMapper<Mpa> {
-        @Override
-        public Mpa mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return new Mpa(rs.getInt("ID"), rs.getString("NAME"));
-        }
-    }
 }

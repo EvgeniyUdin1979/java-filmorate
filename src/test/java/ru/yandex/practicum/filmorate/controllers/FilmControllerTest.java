@@ -227,6 +227,7 @@ class FilmControllerTest {
         upData("src/test/resources/files/userslist.txt", "/users");
         this.mockMvc.perform(put("/films/2/like/1")
                         .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
                 .andExpect(status().isOk());
 
         this.mockMvc.perform(delete("/films/2/like/1")

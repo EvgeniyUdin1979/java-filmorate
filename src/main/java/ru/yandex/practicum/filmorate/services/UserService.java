@@ -72,8 +72,7 @@ public class UserService {
         int friend = validateAndParseInt(forSearchId);
         findUserById(user);
         findUserById(friend);
-        return friends.common(user, friend)
-                .stream().map(users::findById).collect(Collectors.toList());
+        return friends.common(user, friend);
     }
 
     public void addFriend(String userId, String friendId) {

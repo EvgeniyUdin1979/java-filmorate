@@ -16,7 +16,7 @@ import java.util.Map;
 @Repository
 @Slf4j
 public class GenreDbStorage implements GenreStorage {
-
+    private static final RowMapper<Genre>GENRE_ROW_MAPPER = (rs, rowNum) -> new Genre(rs.getInt("ID"), rs.getString("NAME"));
     NamedParameterJdbcTemplate jdbcTemplate;
 
     public GenreDbStorage(NamedParameterJdbcTemplate jdbcTemplate) {
@@ -25,13 +25,13 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public List<Genre> findAll() {
-        return jdbcTemplate.query("SELECT ID, NAME FROM GENRE ORDER BY ID;", Map.of(), new GenreMapper());
+        return jdbcTemplate.query("SELECT ID, NAME FROM GENRE ORDER BY ID;", Map.of(), GENRE_ROW_MAPPER);
     }
 
     @Override
     public Genre findById(int id) {
         try {
-            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM GENRE WHERE ID = :ID ;", Map.of("ID", id), new GenreMapper());
+            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM GENRE WHERE ID = :ID ;", Map.of("ID", id), GENRE_ROW_MAPPER);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

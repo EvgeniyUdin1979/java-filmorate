@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.FilmStorage;
+import ru.yandex.practicum.filmorate.storages.LikesStorage;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,11 +20,13 @@ public class FilmService {
 
 
     private final FilmStorage filmStorage;
+    private final LikesStorage likesStorage;
     private final UserService userService;
 
     @Autowired
-    public FilmService(@Qualifier("filmDAO") FilmStorage filmStorage, UserService userService) {
+    public FilmService(@Qualifier("filmDAO") FilmStorage filmStorage, LikesStorage likesStorage, UserService userService) {
         this.filmStorage = filmStorage;
+        this.likesStorage = likesStorage;
         this.userService = userService;
     }
 
@@ -55,19 +57,19 @@ public class FilmService {
     }
 
     public void addLike(String userId, String filmId) {
-        Film film = findFilmById(validateAndParseInt(filmId));
-        User user = userService.findById(userId);
-        film.getLikesId().add(user.getId());
-        film.setLikesQuantity(film.getLikesId().size());
-        filmStorage.update(film);
+        int film = validateAndParseInt(filmId);
+        int user = validateAndParseInt(userId);
+        findFilmById(film);
+        findById(userId);
+        likesStorage.add(user,film);
     }
 
     public void removeLike(String userId, String filmId) {
-        Film film = findFilmById(validateAndParseInt(filmId));
-        User user = userService.findById(userId);
-        film.getLikesId().remove(user.getId());
-        film.setLikesQuantity(film.getLikesId().size());
-        filmStorage.update(film);
+        int film = validateAndParseInt(filmId);
+        int user = validateAndParseInt(userId);
+        findFilmById(film);
+        findById(userId);
+        likesStorage.remove(user,film);
     }
 
     public List<Film> mostPopularFilm(int count) {

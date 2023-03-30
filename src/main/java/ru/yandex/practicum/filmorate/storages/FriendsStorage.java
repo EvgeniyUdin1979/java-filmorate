@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.storages;
 
+import ru.yandex.practicum.filmorate.model.User;
+
 import java.util.List;
 
 public interface FriendsStorage {
@@ -10,7 +12,7 @@ public interface FriendsStorage {
 
     boolean isFriends(int userId, int friendId);
 
-    List<Integer> common(int userId, int friendId);
+    List<User> common(int userId, int friendId);
 
     List<Integer> findAllById(int id);
 }
