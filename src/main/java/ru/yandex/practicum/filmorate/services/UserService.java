@@ -2,10 +2,12 @@ package ru.yandex.practicum.filmorate.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storages.FriendsStorage;
 import ru.yandex.practicum.filmorate.storages.UserStorage;
 
 import java.util.List;
@@ -15,19 +17,21 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
     private final UserStorage users;
+    private final FriendsStorage friends;
 
     @Autowired
-    public UserService(UserStorage users) {
+    public UserService(@Qualifier("userDAO") UserStorage users, FriendsStorage friends) {
         this.users = users;
+        this.friends = friends;
     }
 
-    public List<User> findAll(){
+    public List<User> findAll() {
         return users.findAll();
     }
 
-    public void createUser(User user){
+    public User createUser(User user) {
         if (user.getId() != 0) {
-            String message ="Для добавления пользователя не нужно указывать id!";
+            String message = "Для добавления пользователя не нужно указывать id!";
             log.info(message + " " + user);
             throw new UserRequestException(message);
         }
@@ -35,57 +39,56 @@ public class UserService {
             log.info("User не имеет имени! Будет использован login {}", user);
             user.setName(user.getLogin());
         }
-        users.create(user);
+        return users.create(user);
     }
-    public User findById(String id){
+
+    public User findById(String id) {
         return findUserById(validateAndParseInt(id));
     }
 
-    public void updateUser(User user){
+    public User updateUser(User user) {
         if (user.getId() == 0) {
             String message = "Для обновления пользователя id нужно указать больше чем 0!";
-            log.info(message,user);
+            log.info(message, user);
             throw new UserRequestException(message);
         }
         findUserById(user.getId());
-        users.update(user);
+        return users.update(user);
     }
-    public void removeAll(){
+
+    public void removeAll() {
         users.removeAll();
     }
 
-
-
-
-
-    public List<User> findFriends(String userId){
-        return findUserById(validateAndParseInt(userId)).getFriendsId()
-                .stream()
-                .map(users::findById)
-                .collect(Collectors.toList());
+    public List<User> findFriends(String userId) {
+        int user = validateAndParseInt(userId);
+        findUserById(user);
+        return friends.findAllById(user)
+                .stream().map(users::findById).collect(Collectors.toList());
     }
 
-    public List<User> findCommonFriends(String userId, String forSearchId){
-        User user = findUserById(validateAndParseInt(userId));
-        User forSearch = findUserById(validateAndParseInt(forSearchId));
-        return user.getFriendsId().stream()
-                .filter(id ->forSearch.getFriendsId().contains(id))
-                .map(users::findById)
-                .collect(Collectors.toList());
+    public List<User> findCommonFriends(String userId, String forSearchId) {
+        int user = validateAndParseInt(userId);
+        int friend = validateAndParseInt(forSearchId);
+        findUserById(user);
+        findUserById(friend);
+        return friends.common(user, friend);
     }
 
-    public void addFriend(String userId, String friendId){
-        User user = findUserById(validateAndParseInt(userId));
-        User friend = findUserById(validateAndParseInt(friendId));
-        user.getFriendsId().add(friend.getId());
-        friend.getFriendsId().add(user.getId());
+    public void addFriend(String userId, String friendId) {
+        int user = validateAndParseInt(userId);
+        int friend = validateAndParseInt(friendId);
+        findUserById(user);
+        findUserById(friend);
+        friends.add(user, friend);
     }
 
-    public void removeFriend(String userId, String friendId){
-        User user = findUserById(validateAndParseInt(userId));
-        User friend = findUserById(validateAndParseInt(friendId));
-        user.getFriendsId().remove(friend.getId());
-        friend.getFriendsId().remove(user.getId());
+    public void removeFriend(String userId, String friendId) {
+        int user = validateAndParseInt(userId);
+        int friend = validateAndParseInt(friendId);
+        findUserById(user);
+        findUserById(friend);
+        friends.remove(user, friend);
     }
 
     private int validateAndParseInt(String id) {
@@ -98,17 +101,15 @@ public class UserService {
         }
     }
 
-    private User findUserById(int id){
+    private User findUserById(int id) {
         User user = users.findById(id);
-        if (user == null){
+        if (user == null) {
             String message = String.format("Пользователь с данным id: %d, не найден", id);
             log.info(message);
             throw new UserRequestException(message, HttpStatus.NOT_FOUND);
         }
         return user;
     }
-
-
 
 
 }

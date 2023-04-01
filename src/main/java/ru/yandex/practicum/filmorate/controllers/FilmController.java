@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/films")
+@RequestMapping(value = "/films")
 public class FilmController {
 
     private final FilmService service;
@@ -30,7 +30,7 @@ public class FilmController {
         return service.findAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}")
     public Film getFilmById(@PathVariable("id") String id) {
         Film film = service.findById(id);
         log.info(String.format("Получены данные по фильмy id: %s.", id));
@@ -46,9 +46,9 @@ public class FilmController {
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
-        service.update(film);
+        Film filmUpdate = service.update(film);
         log.info("Данные по фильму обновленны.");
-        return film;
+        return filmUpdate;
     }
 
     @PutMapping("/{id}/like/{userId}")

@@ -1,16 +1,17 @@
-package ru.yandex.practicum.filmorate.storages;
+package ru.yandex.practicum.filmorate.storages.inmemory;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storages.UserStorage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
-@Component
+@Component("inmemoryuser")
 public class InMemoryUserStorage implements UserStorage {
     private int globalId;
     private final HashMap<Integer, User> users;
@@ -20,9 +21,10 @@ public class InMemoryUserStorage implements UserStorage {
         this.globalId = 0;
     }
 
-    public void create(User user) throws FilmRequestException {
+    public User create(User user) throws FilmRequestException {
         user.setId(getGlobalId());
         users.put(user.getId(), user);
+        return users.get(user.getId());
     }
 
     @Override
@@ -30,8 +32,8 @@ public class InMemoryUserStorage implements UserStorage {
         users.remove(id);
     }
 
-    public void update(User user) {
-        users.put(user.getId(), user);
+    public User update(User user) {
+        return users.put(user.getId(), user);
     }
 
     public User findById(int id) {
@@ -42,11 +44,10 @@ public class InMemoryUserStorage implements UserStorage {
         return new ArrayList<>(users.values());
     }
 
-    public void removeAll(){
+    public void removeAll() {
         users.clear();
         globalId = 0;
     }
-
 
 
     private int getGlobalId() {

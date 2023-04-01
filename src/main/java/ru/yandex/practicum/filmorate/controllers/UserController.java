@@ -16,7 +16,7 @@ public class UserController {
     private final UserService service;
 
     @Autowired
-    public UserController( UserService service) {
+    public UserController(UserService service) {
         this.service = service;
     }
 
@@ -35,9 +35,9 @@ public class UserController {
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
-        service.createUser(user);
-        log.info("Пользоваель добавлен: " + user);
-        return user;
+        User userAdd = service.createUser(user);
+        log.info("Пользоваель добавлен: " + userAdd);
+        return userAdd;
     }
 
 
@@ -52,9 +52,9 @@ public class UserController {
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-        service.updateUser(user);
+        User userUpdate = service.updateUser(user);
         log.info("Данные пользователя обновленны.");
-        return user;
+        return userUpdate;
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
@@ -73,8 +73,8 @@ public class UserController {
 
     @GetMapping("/{id}/friends/common/{friendId}")
     public List<User> userFriends(
-                                  @PathVariable String id,
-                                  @PathVariable String friendId) {
+            @PathVariable String id,
+            @PathVariable String friendId) {
         List<User> commonFriends = service.findCommonFriends(id, friendId);
         log.info("Получены общие друзья у пользователей {} и {}.", id, friendId);
         return commonFriends;

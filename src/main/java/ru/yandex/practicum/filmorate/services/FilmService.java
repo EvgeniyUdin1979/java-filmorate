@@ -3,12 +3,13 @@ package ru.yandex.practicum.filmorate.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.FilmStorage;
+import ru.yandex.practicum.filmorate.storages.LikesStorage;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,62 +20,66 @@ public class FilmService {
 
 
     private final FilmStorage filmStorage;
+    private final LikesStorage likesStorage;
     private final UserService userService;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserService userService) {
+    public FilmService(@Qualifier("filmDAO") FilmStorage filmStorage, LikesStorage likesStorage, UserService userService) {
         this.filmStorage = filmStorage;
+        this.likesStorage = likesStorage;
         this.userService = userService;
     }
 
-    public List<Film> findAll(){
+    public List<Film> findAll() {
         return filmStorage.findAll();
     }
 
-    public Film findById(String id){
+    public Film findById(String id) {
         return findFilmById(validateAndParseInt(id));
     }
 
-    public Film add(Film film){
+    public Film add(Film film) {
         if (film.getId() != 0) {
             String message = String.format("Для добавления фильма не нужно указывать id. Текущий id: %d", film.getId());
             log.info(message, film);
             throw new FilmRequestException(message);
         }
-       return filmStorage.create(film);
+        return filmStorage.create(film);
     }
 
-    public void update(Film film){
+    public Film update(Film film) {
         findFilmById(film.getId());
-        filmStorage.update(film);
+        return filmStorage.update(film);
     }
 
-    public void removeAll(){
+    public void removeAll() {
         filmStorage.removeAll();
     }
 
-    public void addLike(String userId,String filmId){
-        Film film = findFilmById(validateAndParseInt(filmId));
-        User user = userService.findById(userId);
-        film.getLikesId().add(user.getId());
-        film.setLikesQuantity(film.getLikesId().size());
+    public void addLike(String userId, String filmId) {
+        int film = validateAndParseInt(filmId);
+        int user = validateAndParseInt(userId);
+        findFilmById(film);
+        findById(userId);
+        likesStorage.add(user,film);
     }
 
-    public void removeLike(String userId,String filmId){
-        Film film = findFilmById(validateAndParseInt(filmId));
-        User user = userService.findById(userId);
-        film.getLikesId().remove(user.getId());
-        film.setLikesQuantity(film.getLikesId().size());
+    public void removeLike(String userId, String filmId) {
+        int film = validateAndParseInt(filmId);
+        int user = validateAndParseInt(userId);
+        findFilmById(film);
+        findById(userId);
+        likesStorage.remove(user,film);
     }
 
-    public List<Film> mostPopularFilm(int count){
+    public List<Film> mostPopularFilm(int count) {
         return filmStorage.findAll().stream()
-                .sorted((o1, o2) -> o2.getLikesId().size() - o1.getLikesId().size())
+                .sorted((o1, o2) -> o2.getLikesQuantity() - o1.getLikesQuantity())
                 .limit(count)
                 .collect(Collectors.toList());
     }
 
-    public List<Film> mostPopularFilm(){
+    public List<Film> mostPopularFilm() {
         return mostPopularFilm(10);
     }
 
@@ -88,9 +93,9 @@ public class FilmService {
         }
     }
 
-    private Film findFilmById(int id){
+    private Film findFilmById(int id) {
         Film user = filmStorage.findById(id);
-        if (user == null){
+        if (user == null) {
             String message = String.format("Фильм с данным id: %d, не найден", id);
             log.info(message);
             throw new FilmRequestException(message, HttpStatus.NOT_FOUND);

@@ -1,17 +1,18 @@
-package ru.yandex.practicum.filmorate.storages;
+package ru.yandex.practicum.filmorate.storages.inmemory;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storages.FilmStorage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
-@Component
-public class InMemoryFilmStorage implements FilmStorage{
+@Component("inmemoryfilm")
+public class InMemoryFilmStorage implements FilmStorage {
     private int globalId;
     private final HashMap<Integer, Film> films;
 
@@ -20,30 +21,30 @@ public class InMemoryFilmStorage implements FilmStorage{
         this.globalId = 0;
     }
 
-    public Film create(Film film) throws FilmRequestException{
+    public Film create(Film film) throws FilmRequestException {
         film.setId(getGlobalId());
-        films.put(film.getId(),film );
-        return film;
-    }
-
-    public void update(Film film){
         films.put(film.getId(), film);
+        return films.get(film.getId());
     }
 
-    public Film findById(int id){
+    public Film update(Film film) {
+        return films.put(film.getId(), film);
+    }
+
+    public Film findById(int id) {
         return films.get(id);
     }
 
 
-    public void removeById(int id){
+    public void removeById(int id) {
         films.remove(id);
     }
 
-    public List<Film> findAll(){
+    public List<Film> findAll() {
         return new ArrayList<>(films.values());
     }
 
-    public void removeAll(){
+    public void removeAll() {
         films.clear();
         globalId = 0;
     }
