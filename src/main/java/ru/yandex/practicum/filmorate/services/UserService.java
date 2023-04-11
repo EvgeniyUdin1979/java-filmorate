@@ -56,6 +56,10 @@ public class UserService {
         return users.update(user);
     }
 
+    public void delete(String userId) {
+        users.removeById(validateAndParseInt(userId));
+    }
+
     public void removeAll() {
         users.removeAll();
     }
@@ -110,6 +114,4 @@ public class UserService {
         }
         return user;
     }
-
-
 }

@@ -51,6 +51,12 @@ public class FilmController {
         return filmUpdate;
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteFilm(@PathVariable("id") String id) {
+        service.remove(id);
+        log.info("Удален фильм id {}", id);
+    }
+
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable("id") String id,
                         @PathVariable("userId") String userId) {

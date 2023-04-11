@@ -12,6 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -261,4 +263,13 @@ class FilmControllerTest {
                 );
     }
 
+    @Test
+    public void deleteFilm() throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.delete("/films/1")
+                .header("Content-Type", "application/json");
+        this.mockMvc.perform(builder)
+                .andExpect(status().isOk());
+        this.mockMvc.perform(get("/films/1")).andDo(print()).andExpect(status().isNotFound());
+    }
 }

@@ -57,6 +57,12 @@ public class UserController {
         return userUpdate;
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable("id") String id) {
+        service.delete(id);
+        log.info("Удален прользователь id {}", id);
+    }
+
     @DeleteMapping("/{id}/friends/{friendId}")
     public void removeFriend(@PathVariable String id,
                              @PathVariable String friendId) {

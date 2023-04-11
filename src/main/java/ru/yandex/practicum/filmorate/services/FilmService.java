@@ -52,6 +52,10 @@ public class FilmService {
         return filmStorage.update(film);
     }
 
+    public void remove(String filmId) {
+        filmStorage.removeById(validateAndParseInt(filmId));
+    }
+
     public void removeAll() {
         filmStorage.removeAll();
     }
@@ -61,7 +65,7 @@ public class FilmService {
         int user = validateAndParseInt(userId);
         findFilmById(film);
         findById(userId);
-        likesStorage.add(user,film);
+        likesStorage.add(user, film);
     }
 
     public void removeLike(String userId, String filmId) {
@@ -69,7 +73,7 @@ public class FilmService {
         int user = validateAndParseInt(userId);
         findFilmById(film);
         findById(userId);
-        likesStorage.remove(user,film);
+        likesStorage.remove(user, film);
     }
 
     public List<Film> mostPopularFilm(int count) {
