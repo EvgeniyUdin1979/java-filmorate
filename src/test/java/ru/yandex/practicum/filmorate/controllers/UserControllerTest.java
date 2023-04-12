@@ -222,5 +222,15 @@ class UserControllerTest {
                 .andExpect(content().string("{\"message\":\"Пользователь с данным id: 9999, не найден\"}"));
     }
 
+    @Test
+    public void deleteUser() throws Exception {
+        upData("src/test/resources/files/userslist.txt", "/users");
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.delete("/users/1")
+                .header("Content-Type", "application/json");
+        this.mockMvc.perform(builder)
+                .andExpect(status().isOk());
+        this.mockMvc.perform(get("/users/1")).andDo(print()).andExpect(status().isNotFound());
+    }
+
 
 }
