@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
-import ru.yandex.practicum.filmorate.storages.EventStorage;
 import ru.yandex.practicum.filmorate.storages.FriendsStorage;
 import ru.yandex.practicum.filmorate.storages.UserStorage;
 
@@ -22,14 +21,13 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage users;
     private final FriendsStorage friends;
-    private final EventStorage eventStorage;
+    private final EventService eventService;
 
     @Autowired
-    public UserService(@Qualifier("userDAO") UserStorage users, FriendsStorage friends,
-                       @Qualifier("eventDAO") EventStorage eventStorage) {
+    public UserService(@Qualifier("userDAO") UserStorage users, FriendsStorage friends, EventService eventService) {
         this.users = users;
         this.friends = friends;
-        this.eventStorage = eventStorage;
+        this.eventService = eventService;
     }
 
     public List<User> findAll() {
@@ -94,7 +92,7 @@ public class UserService {
         findUserById(user);
         findUserById(friend);
         friends.add(user, friend);
-        eventStorage.addEvent(user, EventType.FRIEND, Operation.ADD, friend);
+        eventService.addEvent(user, EventType.FRIEND, Operation.ADD, friend);
     }
 
     public void removeFriend(String userId, String friendId) {
@@ -103,13 +101,13 @@ public class UserService {
         findUserById(user);
         findUserById(friend);
         friends.remove(user, friend);
-        eventStorage.addEvent(user, EventType.FRIEND, Operation.REMOVE, friend);
+        eventService.addEvent(user, EventType.FRIEND, Operation.REMOVE, friend);
     }
 
     public List<Event> getEvents(String userId) {
         int user = validateAndParseInt(userId);
         findUserById(user);
-        return eventStorage.findByUserId(user);
+        return eventService.findByUserId(user);
     }
 
     private int validateAndParseInt(String id) {
