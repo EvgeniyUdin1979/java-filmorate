@@ -6,7 +6,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.storages.EventStorage;
 import ru.yandex.practicum.filmorate.storages.FriendsStorage;
 import ru.yandex.practicum.filmorate.storages.UserStorage;
 
@@ -18,11 +22,14 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage users;
     private final FriendsStorage friends;
+    private final EventStorage eventStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDAO") UserStorage users, FriendsStorage friends) {
+    public UserService(@Qualifier("userDAO") UserStorage users, FriendsStorage friends,
+                       @Qualifier("eventDAO") EventStorage eventStorage) {
         this.users = users;
         this.friends = friends;
+        this.eventStorage = eventStorage;
     }
 
     public List<User> findAll() {
@@ -87,6 +94,7 @@ public class UserService {
         findUserById(user);
         findUserById(friend);
         friends.add(user, friend);
+        eventStorage.addEvent(user, EventType.FRIEND, Operation.ADD, friend);
     }
 
     public void removeFriend(String userId, String friendId) {
@@ -95,6 +103,13 @@ public class UserService {
         findUserById(user);
         findUserById(friend);
         friends.remove(user, friend);
+        eventStorage.addEvent(user, EventType.FRIEND, Operation.REMOVE, friend);
+    }
+
+    public List<Event> getEvents(String userId) {
+        int user = validateAndParseInt(userId);
+        findUserById(user);
+        return eventStorage.findByUserId(user);
     }
 
     private int validateAndParseInt(String id) {
