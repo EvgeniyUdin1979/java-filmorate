@@ -22,7 +22,7 @@ public class EventDbStorage implements EventStorage {
             EventType.valueOf(rs.getString("EVENT_TYPE")),
             Operation.valueOf(rs.getString("OPERATION")),
             rs.getInt("ENTITY_ID"),
-            rs.getTimestamp("TIME_STAMP")
+            rs.getTimestamp("TIME_STAMP").getTime()
     ));
 
     private final NamedParameterJdbcTemplate jdbcTemplate;

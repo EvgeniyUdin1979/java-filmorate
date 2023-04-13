@@ -19,5 +19,5 @@ public class Event {
     private EventType eventType;
     private Operation operation;
     private int entityId;
-    private Timestamp timeStamp;
+    private long timestamp;
 }
