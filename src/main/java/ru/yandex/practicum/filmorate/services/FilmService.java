@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.FilmStorage;
 import ru.yandex.practicum.filmorate.storages.LikesStorage;
 
@@ -66,7 +67,7 @@ public class FilmService {
         int film = validateAndParseInt(filmId);
         int user = validateAndParseInt(userId);
         findFilmById(film);
-        findById(userId);
+        findUserById(userId);
         likesStorage.add(user, film);
     }
 
@@ -74,7 +75,7 @@ public class FilmService {
         int film = validateAndParseInt(filmId);
         int user = validateAndParseInt(userId);
         findFilmById(film);
-        findById(userId);
+        findUserById(userId);
         likesStorage.remove(user, film);
     }
 
@@ -100,9 +101,19 @@ public class FilmService {
     }
 
     private Film findFilmById(int id) {
-        Film user = filmStorage.findById(id);
-        if (user == null) {
+        Film film = filmStorage.findById(id);
+        if (film == null) {
             String message = String.format("Фильм с данным id: %d, не найден", id);
+            log.info(message);
+            throw new FilmRequestException(message, HttpStatus.NOT_FOUND);
+        }
+        return film;
+    }
+
+    private User findUserById(String id) {
+        User user = userService.findById(id);
+        if (user == null) {
+            String message = String.format("Пользователь с данным id: %s, не найден", id);
             log.info(message);
             throw new FilmRequestException(message, HttpStatus.NOT_FOUND);
         }
