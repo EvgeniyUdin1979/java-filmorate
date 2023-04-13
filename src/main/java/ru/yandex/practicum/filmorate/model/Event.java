@@ -7,8 +7,6 @@ import lombok.Setter;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
 
-import java.sql.Timestamp;
-
 @Getter
 @Setter
 @AllArgsConstructor
