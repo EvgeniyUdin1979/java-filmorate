@@ -89,7 +89,7 @@ public class UserController {
 
     @GetMapping("/{id}/recommendations")
     public List<Film> recommendations(@PathVariable("id") String id) {
-        return service.recommendations(id);
+        return service.recommend(id);
     }
 
     @DeleteMapping("/resetDB")

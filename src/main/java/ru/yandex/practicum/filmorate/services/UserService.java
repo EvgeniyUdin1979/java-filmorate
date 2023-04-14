@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
@@ -26,7 +25,7 @@ public class UserService {
     private final LikesStorage likes;
 
     @Autowired
-    public UserService(@Qualifier("userDAO") UserStorage users, FriendsStorage friends, FilmStorage films, LikesStorage likes) {
+    public UserService(UserStorage users, FriendsStorage friends, FilmStorage films, LikesStorage likes) {
         this.users = users;
         this.friends = friends;
         this.films = films;
@@ -105,7 +104,7 @@ public class UserService {
         friends.remove(user, friend);
     }
 
-    public List<Film> recommendations(String userId) {
+    public List<Film> recommend(String userId) {
         int id = validateAndParseInt(userId);
         findUserById(id);
         return getRecommendations(likes.allLikes(), id).stream().map(films::findById).collect(Collectors.toList());

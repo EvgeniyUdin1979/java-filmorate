@@ -19,7 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-@Repository("filmDAO")
+@Repository
 public class FilmDbStorage implements FilmStorage {
     private static final RowMapper<Film> FILM_ROW_MAPPER = (rs, rowNum) -> new Film(rs.getInt("FILM_ID"),
             rs.getString("FILM_NAME"),
