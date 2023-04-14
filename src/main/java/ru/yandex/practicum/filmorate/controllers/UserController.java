@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controllers;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.services.UserService;
 
@@ -84,6 +85,11 @@ public class UserController {
         List<User> commonFriends = service.findCommonFriends(id, friendId);
         log.info("Получены общие друзья у пользователей {} и {}.", id, friendId);
         return commonFriends;
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> recommendations(@PathVariable("id") String id) {
+        return service.recommendations(id);
     }
 
     @DeleteMapping("/resetDB")

@@ -54,7 +54,7 @@ class UserControllerServiceTest {
                 .build();
         switch (urlRequest) {
             case "/films":
-                List<Film> films = mapper.readValue(string, new TypeReference<List<Film>>() {
+                List<Film> films = mapper.readValue(string, new TypeReference<>() {
                 });
                 for (Film film : films) {
                     this.mockMvc.perform(post(urlRequest)
@@ -63,7 +63,7 @@ class UserControllerServiceTest {
                 }
                 break;
             case "/users":
-                List<User> users = mapper.readValue(string, new TypeReference<List<User>>() {
+                List<User> users = mapper.readValue(string, new TypeReference<>() {
                 });
                 for (User user : users) {
                     this.mockMvc.perform(post(urlRequest)
@@ -88,14 +88,6 @@ class UserControllerServiceTest {
                         jsonPath("$[0].id").value(2),
                         jsonPath("$[0].name").value("Nick Name")
                 );
-//        this.mockMvc.perform(get("/users/{id}/friends", "2"))
-//                .andExpectAll(
-//                        status().isOk(),
-//                        content().contentType("application/json;charset=UTF-8"),
-//                        jsonPath("$.length()").value(1),
-//                        jsonPath("$[0].id").value(1),
-//                        jsonPath("$[0].name").value("Stas Name")
-//                );
     }
 
     @Test
@@ -153,6 +145,73 @@ class UserControllerServiceTest {
                         status().isOk(),
                         jsonPath("$.length()").value(0)
                 );
+    }
+
+    @Test
+    public void getRecommendationWithoutLikes() throws Exception {
+        upData("src/test/resources/files/userslist.txt", "/users");
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        this.mockMvc.perform(get("/users/{id}/recommendations", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    public void getRecommendationWithoutSomeLikes() throws Exception {
+        upData("src/test/resources/files/userslist.txt", "/users");
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        initLikes();
+        this.mockMvc.perform(delete("/films/{id}/like/{userId}", "2", "2"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(delete("/films/{id}/like/{userId}", "5", "4"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(get("/users/{id}/recommendations", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    public void getRecommendationUser1() throws Exception {
+        upData("src/test/resources/files/userslist.txt", "/users");
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        initLikes();
+        this.mockMvc.perform(get("/users/{id}/recommendations", "1"))
+                .andExpect(status().isOk())
+                .andExpectAll(
+                        jsonPath("$.length()").value(1),
+                        jsonPath("$[0].id").value(4),
+                        jsonPath("$[0].name").value("New film #4")
+                );
+    }
+
+    @Test
+    private void initLikes() throws Exception {
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "1", "1"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "3", "1"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "2", "2"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "5", "2"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "1", "3"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "2", "3"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "4", "3"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "2", "4"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "3", "4"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "5", "4"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "1", "5"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "3", "5"))
+                .andExpect(status().isOk());
+        this.mockMvc.perform(put("/films/{id}/like/{userId}", "4", "5"))
+                .andExpect(status().isOk());
     }
 
 }

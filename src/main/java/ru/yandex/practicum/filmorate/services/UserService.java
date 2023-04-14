@@ -6,11 +6,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storages.FilmStorage;
 import ru.yandex.practicum.filmorate.storages.FriendsStorage;
+import ru.yandex.practicum.filmorate.storages.LikesStorage;
 import ru.yandex.practicum.filmorate.storages.UserStorage;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -18,11 +21,16 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage users;
     private final FriendsStorage friends;
+    private final FilmStorage films;
+
+    private final LikesStorage likes;
 
     @Autowired
-    public UserService(@Qualifier("userDAO") UserStorage users, FriendsStorage friends) {
+    public UserService(@Qualifier("userDAO") UserStorage users, FriendsStorage friends, FilmStorage films, LikesStorage likes) {
         this.users = users;
         this.friends = friends;
+        this.films = films;
+        this.likes = likes;
     }
 
     public List<User> findAll() {
@@ -95,6 +103,43 @@ public class UserService {
         findUserById(user);
         findUserById(friend);
         friends.remove(user, friend);
+    }
+
+    public List<Film> recommendations(String userId) {
+        int id = validateAndParseInt(userId);
+        findUserById(id);
+        return getRecommendations(likes.allLikes(), id).stream().map(films::findById).collect(Collectors.toList());
+    }
+
+    private List<Integer> getRecommendations(Map<Integer, HashSet<Integer>> allLikes, int userId) {
+        if (allLikes.get(userId) == null) {
+            return new ArrayList<>();
+        }
+        HashMap<Integer, Integer> usersCount = new HashMap<>();
+        allLikes.get(userId).forEach(filmId -> {
+            for (Map.Entry<Integer, HashSet<Integer>> films : allLikes.entrySet()) {
+                int anotheUser = films.getKey();
+                if (anotheUser == userId) {
+                    continue;
+                }
+                if (films.getValue().contains(filmId)) {
+                    if (!usersCount.containsKey(anotheUser)) {
+                        usersCount.put(anotheUser, 0);
+                    }
+                    int oldValue = usersCount.get(anotheUser);
+                    usersCount.put(anotheUser, ++oldValue);
+                }
+            }
+        });
+        Optional<Map.Entry<Integer, Integer>> max = usersCount.entrySet().stream().max(Map.Entry.comparingByValue());
+        if (max.isEmpty()) {
+            return new ArrayList<>();
+        }
+        if (max.get().getValue() == 0) {
+            return new ArrayList<>();
+        }
+        allLikes.get(max.get().getKey()).removeAll(allLikes.get(userId));
+        return new ArrayList<>(allLikes.get(max.get().getKey()));
     }
 
     private int validateAndParseInt(String id) {
