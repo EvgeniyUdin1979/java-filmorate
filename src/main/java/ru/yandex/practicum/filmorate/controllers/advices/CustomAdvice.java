@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
+import ru.yandex.practicum.filmorate.controllers.errors.NotFoundException;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
 
 import javax.validation.ConstraintViolation;
@@ -58,6 +59,12 @@ public class CustomAdvice {
         String message = "Ошибка в полученном Json, проверьте данные и повторите попытку!";
         log.info(message);
         return new ResponseEntity<>(new Response(message),HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Response> handleException(NotFoundException ex) {
+        log.warn(ex.getMessage());
+        return new ResponseEntity<>(new Response(ex.getMessage()),HttpStatus.NOT_FOUND);
     }
 
     private ResponseEntity<Response> getResponse(HttpStatus httpStatus, String message) {

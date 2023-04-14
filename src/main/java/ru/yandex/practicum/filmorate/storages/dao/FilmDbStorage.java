@@ -159,6 +159,12 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update("DELETE FROM FILM; ALTER TABLE FILM ALTER COLUMN ID RESTART WITH 1", Map.of());
     }
 
+    @Override
+    public boolean exists(int id) {
+        String query = "SELECT EXISTS(SELECT * FROM film WHERE id = :ID)";
+        return jdbcTemplate.queryForObject(query, Map.of("ID",id), Boolean.class);
+    }
+
     static class FilmMapper implements RowMapper<Film> {
 
         @Override

@@ -16,4 +16,6 @@ public interface FilmStorage {
     Film update(Film film);
 
     void removeAll();
+
+    boolean exists(int id);
 }
