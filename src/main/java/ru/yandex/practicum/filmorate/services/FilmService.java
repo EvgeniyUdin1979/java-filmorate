@@ -7,10 +7,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.FilmStorage;
 import ru.yandex.practicum.filmorate.storages.LikesStorage;
 
@@ -74,7 +75,14 @@ public class FilmService {
         findFilmById(film);
         findUserById(userId);
         likesStorage.add(user, film);
-        eventService.addEvent(user, EventType.LIKE, Operation.ADD, film);
+        eventService.addEvent(Event.builder()
+                .eventId(null)
+                .userId(user)
+                .eventType(EventType.LIKE)
+                .operation(Operation.ADD)
+                .entityId(film)
+                .timestamp(null)
+                .build());
     }
 
     public void removeLike(String userId, String filmId) {
@@ -83,7 +91,13 @@ public class FilmService {
         findFilmById(film);
         findUserById(userId);
         likesStorage.remove(user, film);
-        eventService.addEvent(user, EventType.LIKE, Operation.REMOVE, film);
+        eventService.addEvent(Event.builder()
+                .eventId(null)
+                .userId(user)
+                .eventType(EventType.LIKE)
+                .operation(Operation.REMOVE)
+                .entityId(film)
+                .build());
     }
 
     public List<Film> mostPopularFilm(int count) {

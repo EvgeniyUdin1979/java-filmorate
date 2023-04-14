@@ -1,16 +1,20 @@
 package ru.yandex.practicum.filmorate.storages.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Event;
-
-import org.springframework.jdbc.core.RowMapper;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storages.EventStorage;
 
 import javax.sql.DataSource;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -35,13 +39,16 @@ public class EventDbStorage implements EventStorage {
     }
 
     @Override
-    public void addEvent(int userId, EventType eventType, Operation operation, int entityId) {
-        String sql = "INSERT INTO EVENTS_FEED (USER_ID, EVENT_TYPE, OPERATION, ENTITY_ID) " +
-                "VALUES (:USER_ID, :EVENT_TYPE, :OPERATION, :ENTITY_ID);";
-        jdbcTemplate.update(sql, Map.of("USER_ID", userId,
-                "EVENT_TYPE", eventType.name(),
-                "OPERATION", operation.name(),
-                "ENTITY_ID", entityId));
+    public void addEvent(Event event) {
+        SqlParameterSource param = new MapSqlParameterSource()
+                .addValue("USER_ID", event.getUserId())
+                .addValue("EVENT_TYPE", event.getEventType().name())
+                .addValue("OPERATION", event.getOperation())
+                .addValue("ENTITY_ID", event.getEntityId())
+                .addValue("TIME_STAMP", Timestamp.valueOf(LocalDateTime.now()));
+        SimpleJdbcInsert insert = new SimpleJdbcInsert(dataSource).withTableName("EVENTS_FEED")
+                .usingGeneratedKeyColumns("EVENT_ID");
+        insert.execute(param);
     }
 
     @Override

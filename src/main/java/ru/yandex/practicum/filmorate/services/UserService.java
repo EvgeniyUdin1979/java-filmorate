@@ -92,7 +92,13 @@ public class UserService {
         findUserById(user);
         findUserById(friend);
         friends.add(user, friend);
-        eventService.addEvent(user, EventType.FRIEND, Operation.ADD, friend);
+        eventService.addEvent(Event.builder()
+                .eventId(null)
+                .userId(user)
+                .eventType(EventType.FRIEND)
+                .operation(Operation.ADD)
+                .entityId(friend)
+                .build());
     }
 
     public void removeFriend(String userId, String friendId) {
@@ -101,7 +107,13 @@ public class UserService {
         findUserById(user);
         findUserById(friend);
         friends.remove(user, friend);
-        eventService.addEvent(user, EventType.FRIEND, Operation.REMOVE, friend);
+        eventService.addEvent(Event.builder()
+                .eventId(null)
+                .userId(user)
+                .eventType(EventType.FRIEND)
+                .operation(Operation.REMOVE)
+                .entityId(friend)
+                .build());
     }
 
     public List<Event> getEvents(String userId) {

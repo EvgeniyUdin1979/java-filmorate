@@ -232,5 +232,47 @@ class UserControllerTest {
         this.mockMvc.perform(get("/users/1")).andDo(print()).andExpect(status().isNotFound());
     }
 
+    @Test
+    void addFriendAndCheckFeed() throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        upData("src/test/resources/files/userslist.txt", "/users");
+        this.mockMvc.perform(put("/users/1/friends/2")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andExpect(status().isOk());
 
+        this.mockMvc.perform(get("/users/1/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType("application/json; charset=utf-8"),
+                        jsonPath("$.length()").value(1),
+                        jsonPath("$.[0]userId").value(1),
+                        jsonPath("$.[0]eventType").value("FRIEND"),
+                        jsonPath("$.[0]operation").value("ADD"),
+                        jsonPath("$.[0]entityId").value(2)
+                );
+    }
+
+    @Test
+    void removeFriendAndCheckFeed() throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        upData("src/test/resources/files/userslist.txt", "/users");
+        this.mockMvc.perform(delete("/users/1/friends/2")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get("/users/1/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType("application/json; charset=utf-8"),
+                        jsonPath("$.length()").value(1),
+                        jsonPath("$.[0]userId").value(1),
+                        jsonPath("$.[0]eventType").value("FRIEND"),
+                        jsonPath("$.[0]operation").value("REMOVE"),
+                        jsonPath("$.[0]entityId").value(2)
+                );
+    }
 }

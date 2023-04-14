@@ -3,8 +3,6 @@ package ru.yandex.practicum.filmorate.services;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.enums.EventType;
-import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storages.EventStorage;
 
 import java.util.List;
@@ -19,10 +17,11 @@ public class EventService {
         this.eventStorage = eventStorage;
     }
 
-    public void addEvent(int userId, EventType eventType, Operation operation, int entityId) {
-        eventStorage.addEvent(userId, eventType, operation, entityId);
+    public void addEvent(Event event) {
+        eventStorage.addEvent(event);
         log.info("Добавлен ивент в ленту событий со следующими значениями: " +
-                "userId: {}, eventType: {}, operation: {}, entityId: {}", userId, eventType, operation, entityId);
+                "userId: {}, eventType: {}, operation: {}, entityId: {}", event.getUserId(), event.getEventType(),
+                event.getOperation(), event.getEntityId());
     }
 
     public List<Event> findByUserId(int userId) {
