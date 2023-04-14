@@ -162,7 +162,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public boolean exists(int id) {
         String query = "SELECT EXISTS(SELECT * FROM film WHERE id = :ID)";
-        return jdbcTemplate.queryForObject(query, Map.of("ID",id), Boolean.class);
+        return jdbcTemplate.queryForObject(query, Map.of("ID", id), Boolean.class);
     }
 
     static class FilmMapper implements RowMapper<Film> {
