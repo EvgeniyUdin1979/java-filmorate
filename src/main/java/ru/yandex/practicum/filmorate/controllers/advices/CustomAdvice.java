@@ -64,7 +64,7 @@ public class CustomAdvice {
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Response> handleException(NotFoundException ex) {
         log.warn(ex.getMessage());
-        return new ResponseEntity<>(new Response(ex.getMessage()),HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new Response(ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     private ResponseEntity<Response> getResponse(HttpStatus httpStatus, String message) {
