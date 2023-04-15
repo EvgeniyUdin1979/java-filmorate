@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storages.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -15,8 +14,6 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storages.FilmStorage;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 @Repository
@@ -91,12 +88,9 @@ public class FilmDbStorage implements FilmStorage {
             Film film = jdbcTemplate.queryForObject(sql, Map.of("ID", id), FILM_ROW_MAPPER);
             String sqlGenres = "SELECT FG.FILM_ID ,FG.GENRE_ID,G.NAME FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID " +
                     "WHERE FILM_ID =:ID;";
-            jdbcTemplate.query(sqlGenres, Map.of("ID", id), new RowCallbackHandler() {
-                @Override
-                public void processRow(ResultSet rs) throws SQLException {
-                    film.getGenres()
-                            .add(new Genre(rs.getInt("GENRE_ID"), rs.getString("NAME")));
-                }
+            jdbcTemplate.query(sqlGenres, Map.of("ID", id), rs -> {
+                film.getGenres()
+                        .add(new Genre(rs.getInt("GENRE_ID"), rs.getString("NAME")));
             });
             return film;
         } catch (EmptyResultDataAccessException e) {
@@ -157,19 +151,5 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public void removeAll() {
         jdbcTemplate.update("DELETE FROM FILM; ALTER TABLE FILM ALTER COLUMN ID RESTART WITH 1", Map.of());
-    }
-
-    static class FilmMapper implements RowMapper<Film> {
-
-        @Override
-        public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return new Film(rs.getInt("FILM_ID"),
-                    rs.getString("FILM_NAME"),
-                    rs.getString("FILM_DESCRIPTION"),
-                    rs.getDate("FILM_RELEASE_DATE").toLocalDate(),
-                    rs.getInt("FILM_DURATION"),
-                    rs.getInt("FILM_LIKE_QUANTITY"),
-                    new Mpa(rs.getInt("RATING_ID"), rs.getString("RATING_NAME")));
-        }
     }
 }
