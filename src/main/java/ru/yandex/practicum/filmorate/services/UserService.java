@@ -116,17 +116,17 @@ public class UserService {
         }
         HashMap<Integer, Integer> usersCount = new HashMap<>();
         allLikes.get(userId).forEach(filmId -> {
-            for (Map.Entry<Integer, HashSet<Integer>> films : allLikes.entrySet()) {
-                int anotheUser = films.getKey();
-                if (anotheUser == userId) {
+            for (Map.Entry<Integer, HashSet<Integer>> user : allLikes.entrySet()) {
+                int anotherUserId = user.getKey();
+                if (anotherUserId == userId) {
                     continue;
                 }
-                if (films.getValue().contains(filmId)) {
-                    if (!usersCount.containsKey(anotheUser)) {
-                        usersCount.put(anotheUser, 0);
+                if (user.getValue().contains(filmId)) {
+                    if (!usersCount.containsKey(anotherUserId)) {
+                        usersCount.put(anotherUserId, 0);
                     }
-                    int oldValue = usersCount.get(anotheUser);
-                    usersCount.put(anotheUser, ++oldValue);
+                    int oldValue = usersCount.get(anotherUserId);
+                    usersCount.put(anotherUserId, ++oldValue);
                 }
             }
         });
