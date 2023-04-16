@@ -19,9 +19,7 @@ public class EventService {
 
     public void addEvent(Event event) {
         eventStorage.addEvent(event);
-        log.info("Добавлен ивент в ленту событий со следующими значениями: " +
-                "userId: {}, eventType: {}, operation: {}, entityId: {}", event.getUserId(), event.getEventType(),
-                event.getOperation(), event.getEntityId());
+        log.info("Добавлен ивент в ленту событий: " + event);
     }
 
     public List<Event> findByUserId(int userId) {

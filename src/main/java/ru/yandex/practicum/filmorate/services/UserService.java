@@ -93,7 +93,6 @@ public class UserService {
         findUserById(friend);
         friends.add(user, friend);
         eventService.addEvent(Event.builder()
-                .eventId(null)
                 .userId(user)
                 .eventType(EventType.FRIEND)
                 .operation(Operation.ADD)
@@ -108,7 +107,6 @@ public class UserService {
         findUserById(friend);
         friends.remove(user, friend);
         eventService.addEvent(Event.builder()
-                .eventId(null)
                 .userId(user)
                 .eventType(EventType.FRIEND)
                 .operation(Operation.REMOVE)

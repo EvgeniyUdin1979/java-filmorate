@@ -76,12 +76,10 @@ public class FilmService {
         findUserById(userId);
         likesStorage.add(user, film);
         eventService.addEvent(Event.builder()
-                .eventId(null)
                 .userId(user)
                 .eventType(EventType.LIKE)
                 .operation(Operation.ADD)
                 .entityId(film)
-                .timestamp(null)
                 .build());
     }
 
@@ -92,7 +90,6 @@ public class FilmService {
         findUserById(userId);
         likesStorage.remove(user, film);
         eventService.addEvent(Event.builder()
-                .eventId(null)
                 .userId(user)
                 .eventType(EventType.LIKE)
                 .operation(Operation.REMOVE)

@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.enums.Operation;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class Event {
     private Integer eventId;
     private int userId;

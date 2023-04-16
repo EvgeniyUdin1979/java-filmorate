@@ -275,4 +275,56 @@ class UserControllerTest {
                         jsonPath("$.[0]entityId").value(2)
                 );
     }
+
+    @Test
+    void checkFeedForMissingUser() throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        upData("src/test/resources/files/userslist.txt", "/users");
+
+        this.mockMvc.perform(get("/users/9999/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isNotFound(),
+                        content().string("{\"message\":\"Пользователь с данным id: 9999, не найден\"}"));
+    }
+
+    @Test
+    void checkFeedForNegativeUserId() throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        upData("src/test/resources/files/userslist.txt", "/users");
+
+        this.mockMvc.perform(get("/users/-1/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isNotFound(),
+                        content().string("{\"message\":\"Пользователь с данным id: -1, не найден\"}"));
+    }
+
+    @Test
+    void checkFeedForStringUserId() throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        upData("src/test/resources/files/userslist.txt", "/users");
+
+        this.mockMvc.perform(get("/users/а/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isBadRequest(),
+                        content().string("{\"message\":\"Данный id: а, не целое число!\"}"));
+    }
+
+    @Test
+    void checkFeedForSymbolUserId() throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        upData("src/test/resources/files/userslist.txt", "/users");
+
+        this.mockMvc.perform(get("/users/@/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isBadRequest(),
+                        content().string("{\"message\":\"Данный id: @, не целое число!\"}"));
+    }
 }
