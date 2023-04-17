@@ -43,7 +43,7 @@ public class DirectorController {
         return director;
     }
 
-    @DeleteMapping
+    @DeleteMapping(value = "/{id}")
     public void deleteDirector(@PathVariable("id") String id) {
         service.deleteById(id);
         log.info(String.format("Удалены данные по режиссёру id: %s.", id));

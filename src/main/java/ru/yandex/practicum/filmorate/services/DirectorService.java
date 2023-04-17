@@ -40,11 +40,6 @@ public class DirectorService {
     }
 
     public Director createDirector(Director director) {
-        if (director.getId() != 0) {
-            String message = "Для добавления режиссёра не нужно указывать id!";
-            log.info(message + " " + director);
-            throw new FilmRequestException(message);
-        }
         if (director.getName() == null || director.getName().isEmpty() || director.getName().isBlank()) {
             throw new FilmRequestException("Имя режиссёра пустое!", HttpStatus.BAD_REQUEST);
         }

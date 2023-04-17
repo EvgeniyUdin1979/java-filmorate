@@ -23,12 +23,14 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final LikesStorage likesStorage;
     private final UserService userService;
+    private final DirectorService directorService;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, LikesStorage likesStorage, UserService userService) {
+    public FilmService(FilmStorage filmStorage, LikesStorage likesStorage, UserService userService, DirectorService directorService) {
         this.filmStorage = filmStorage;
         this.likesStorage = likesStorage;
         this.userService = userService;
+        this.directorService = directorService;
     }
 
     public List<Film> findAll() {
@@ -80,6 +82,7 @@ public class FilmService {
     }
 
     public List<Film> getFilmsByDirector(int directorId, Optional<String> sortBy) {
+        directorService.findById(directorId);
         return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 
