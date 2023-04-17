@@ -275,6 +275,43 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
+    @Override
+    public List<Film> getFilmBySearch(String query) {
+        String sql = "SELECT F.ID AS FILM_ID,\n" +
+                "F.NAME AS FILM_NAME,\n" +
+                "F.DESCRIPTION AS FILM_DESCRIPTION, \n" +
+                "F.RELEASE_DATE AS FILM_RELEASE_DATE, \n" +
+                "F.DURATION AS FILM_DURATION, \n" +
+                "F.LIKE_QUANTITY AS FILM_LIKE_QUANTITY,\n" +
+                "R.ID AS RATING_ID,\n" +
+                "R.NAME AS RATING_NAME \n" +
+                "FROM FILM F\n" +
+                "JOIN RATING R ON R.ID = F.RATING_ID " +
+                "WHERE F.NAME ILIKE :query";
+        SqlParameterSource parameters = new MapSqlParameterSource().addValue("query", "'%" + "query" + "%'");
+        List<Film> films = jdbcTemplate.query(sql, parameters, FILM_ROW_MAPPER);
+        String sqlGenres = "SELECT FG.FILM_ID ,FG.GENRE_ID,G.NAME FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID\n" +
+                "WHERE FILM_ID IN (SELECT ID FROM FILM);";
+        HashMap<Integer, Set<Genre>> map = new HashMap<>();
+        jdbcTemplate.query(sqlGenres, rs -> {
+            Genre genre = new Genre(rs.getInt("GENRE_ID"), rs.getString("NAME"));
+            int key = rs.getInt("FILM_ID");
+            if (map.containsKey(key)) {
+                map.get(key).add(genre);
+            } else {
+                Set<Genre> genres = new HashSet<>();
+                genres.add(genre);
+                map.put(key, genres);
+            }
+        });
+        for (Film film : films) {
+            if (map.containsKey(film.getId())) {
+                film.getGenres().addAll(map.get(film.getId()));
+            }
+        }
+        return films;
+    }
+
     static class FilmMapper implements RowMapper<Film> {
 
         @Override

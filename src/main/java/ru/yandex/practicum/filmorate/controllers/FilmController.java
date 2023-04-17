@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.services.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Optional;
 
@@ -104,5 +105,10 @@ public class FilmController {
     public List<Film> getByDirector(@PathVariable("directorId") String directorId,
                                     @RequestParam Optional<String> sortBy) {
         return service.getFilmsByDirector(directorId, sortBy);
+    }
+    @GetMapping("/search")
+    public List<Film> getFilmBySearch (@RequestParam("query") @NotNull String query) {
+        log.info("Поиск самых популярных фильмов по запросу {}.", query);
+        return service.getFilmBySearch(query);
     }
 }

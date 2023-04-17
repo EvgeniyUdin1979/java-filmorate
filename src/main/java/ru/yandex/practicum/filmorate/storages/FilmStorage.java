@@ -19,4 +19,6 @@ public interface FilmStorage {
     void removeAll();
 
     List<Film> getFilmsByDirector(int directorId, Optional<String> sortBy);
+
+    List<Film> getFilmBySearch(String query);
 }
