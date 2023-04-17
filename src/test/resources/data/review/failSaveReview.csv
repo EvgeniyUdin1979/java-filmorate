@@ -1,0 +1,6 @@
+{"isPositive": false,"userId": 100,"filmId": 101}|Отзыв не может быть пустым или состоять только из пробелов!|400
+{"content": "This film is sooo good.","userId": 101,"filmId": 101}|Тип отзыва должен быть указан!|400
+{"content": "This film is great!","isPositive": true,"filmId": 100}|Id пользователя должен быть указан!|400
+{"content": "This film is sucks.","isPositive": false,"userId": 100}|Id фильма должен быть указан!|400
+{"content": "This film is sucks.","isPositive": false,"userId": 999,"filmId": 100}|Пользователь с id(999) не найден!|404
+{"content": "This film is sucks.","isPositive": false,"userId": 100,"filmId": 999}|"Фильм с id(999) не найден!"|404
