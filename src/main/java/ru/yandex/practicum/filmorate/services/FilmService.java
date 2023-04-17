@@ -128,7 +128,7 @@ public class FilmService {
         return user;
     }
 
-    public List<Film> getFilmBySearch(String query) {
-        return filmStorage.getFilmBySearch(query);
+    public List<Film> getFilmBySearch(String query, String by) {
+        return filmStorage.getFilmBySearch(query, by);
     }
 }

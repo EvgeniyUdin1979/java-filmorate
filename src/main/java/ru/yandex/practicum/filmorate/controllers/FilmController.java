@@ -107,8 +107,9 @@ public class FilmController {
         return service.getFilmsByDirector(directorId, sortBy);
     }
     @GetMapping("/search")
-    public List<Film> getFilmBySearch (@RequestParam("query") @NotNull String query) {
+    public List<Film> getFilmBySearch (@RequestParam("query") @NotNull String query,
+                                       @RequestParam("by") @NotNull String by) {
         log.info("Поиск самых популярных фильмов по запросу {}.", query);
-        return service.getFilmBySearch(query);
+        return service.getFilmBySearch(query, by);
     }
 }

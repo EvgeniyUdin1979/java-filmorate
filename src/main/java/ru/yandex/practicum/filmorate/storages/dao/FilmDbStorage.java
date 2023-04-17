@@ -276,37 +276,69 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmBySearch(String query) {
-        String sql = "SELECT F.ID AS FILM_ID,\n" +
-                "F.NAME AS FILM_NAME,\n" +
-                "F.DESCRIPTION AS FILM_DESCRIPTION, \n" +
-                "F.RELEASE_DATE AS FILM_RELEASE_DATE, \n" +
-                "F.DURATION AS FILM_DURATION, \n" +
-                "F.LIKE_QUANTITY AS FILM_LIKE_QUANTITY,\n" +
-                "R.ID AS RATING_ID,\n" +
-                "R.NAME AS RATING_NAME \n" +
-                "FROM FILM F\n" +
+    public List<Film> getFilmBySearch(String query, String by) {
+
+        String sqlAllFilms = "SELECT F.ID AS FILM_ID, F.NAME AS FILM_NAME, " +
+                "F.DESCRIPTION AS FILM_DESCRIPTION, F.RELEASE_DATE AS FILM_RELEASE_DATE, " +
+                "F.DURATION AS FILM_DURATION, F.LIKE_QUANTITY AS FILM_LIKE_QUANTITY, " +
+                "R.ID AS RATING_ID, R.NAME AS RATING_NAME, D.NAME " +
+                "FROM FILM F " +
                 "JOIN RATING R ON R.ID = F.RATING_ID " +
-                "WHERE F.NAME ILIKE :query";
+                "LEFT JOIN FILM_X_DIRECTOR AS FD ON F.ID = FD.FILM_ID  " +
+                "LEFT JOIN DIRECTOR AS D ON FD.DIRECTOR_ID = D.ID ";
+        String[] search = by.split(",");
+        String sqlSearch = "";
+        if (search.length == 1 && search[0] == "title") {
+            sqlSearch = "WHERE F.NAME ILIKE :query";
+        } else if (search.length == 1 && search[0] == "director") {
+            sqlSearch = "WHERE D.NAME ILIKE :query";
+        } else {
+            sqlSearch = "WHERE F.NAME ILIKE :query OR D.NAME ILIKE :query";
+        }
+        String sqlOrd = "ORDER BY F.LIKE_QUANTITY DESC";
         SqlParameterSource parameters = new MapSqlParameterSource().addValue("query", "'%" + "query" + "%'");
-        List<Film> films = jdbcTemplate.query(sql, parameters, FILM_ROW_MAPPER);
-        String sqlGenres = "SELECT FG.FILM_ID ,FG.GENRE_ID,G.NAME FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID\n" +
-                "WHERE FILM_ID IN (SELECT ID FROM FILM);";
-        HashMap<Integer, Set<Genre>> map = new HashMap<>();
+
+        List<Film> films = jdbcTemplate.query(String.format(sqlAllFilms, sqlSearch, sqlOrd), parameters, FILM_ROW_MAPPER);
+
+        String sqlGenres = "SELECT FG.FILM_ID, FG.GENRE_ID, G.NAME " +
+                "FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID " +
+                "WHERE FILM_ID IN (SELECT ID FROM FILM)";
+        HashMap<Integer, Set<Genre>> genreMap = new HashMap<>();
         jdbcTemplate.query(sqlGenres, rs -> {
             Genre genre = new Genre(rs.getInt("GENRE_ID"), rs.getString("NAME"));
             int key = rs.getInt("FILM_ID");
-            if (map.containsKey(key)) {
-                map.get(key).add(genre);
+            if (genreMap.containsKey(key)) {
+                genreMap.get(key).add(genre);
             } else {
                 Set<Genre> genres = new HashSet<>();
                 genres.add(genre);
-                map.put(key, genres);
+                genreMap.put(key, genres);
             }
         });
+
+        String sqlDirectors = "SELECT FD.FILM_ID, FD.DIRECTOR_ID, D.NAME " +
+                "FROM FILM_X_DIRECTOR FD " +
+                "JOIN DIRECTOR D ON D.ID = FD.DIRECTOR_ID " +
+                "WHERE FILM_ID IN (SELECT ID FROM FILM)";
+        HashMap<Integer, Set<Director>> directorMap = new HashMap<>();
+        jdbcTemplate.query(sqlDirectors, rs -> {
+            Director director = new Director(rs.getInt("DIRECTOR_ID"), rs.getString("NAME"));
+            int key = rs.getInt("FILM_ID");
+            if (directorMap.containsKey(key)) {
+                directorMap.get(key).add(director);
+            } else {
+                Set<Director> directors = new HashSet<>();
+                directors.add(director);
+                directorMap.put(key, directors);
+            }
+        });
+
         for (Film film : films) {
-            if (map.containsKey(film.getId())) {
-                film.getGenres().addAll(map.get(film.getId()));
+            if (genreMap.containsKey(film.getId())) {
+                film.getGenres().addAll(genreMap.get(film.getId()));
+            }
+            if (directorMap.containsKey(film.getId())) {
+                film.getDirectors().addAll(directorMap.get(film.getId()));
             }
         }
         return films;
