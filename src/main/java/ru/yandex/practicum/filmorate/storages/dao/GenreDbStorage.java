@@ -8,8 +8,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storages.GenreStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -34,13 +32,6 @@ public class GenreDbStorage implements GenreStorage {
             return jdbcTemplate.queryForObject("SELECT ID, NAME FROM GENRE WHERE ID = :ID ;", Map.of("ID", id), GENRE_ROW_MAPPER);
         } catch (EmptyResultDataAccessException e) {
             return null;
-        }
-    }
-
-    private class GenreMapper implements RowMapper<Genre> {
-        @Override
-        public Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return new Genre(rs.getInt("ID"), rs.getString("NAME"));
         }
     }
 }

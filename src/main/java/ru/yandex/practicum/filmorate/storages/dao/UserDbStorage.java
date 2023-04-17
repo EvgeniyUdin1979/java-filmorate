@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
 
-@Repository("userDAO")
+@Repository
 public class UserDbStorage implements UserStorage {
     static final RowMapper<User> USER_ROW_MAPPER = (rs, rowNum) -> new User(
             rs.getInt("ID"),

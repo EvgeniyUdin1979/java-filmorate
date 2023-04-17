@@ -103,12 +103,9 @@ public class FilmDbStorage implements FilmStorage {
             Film film = jdbcTemplate.queryForObject(sql, Map.of("ID", id), FILM_ROW_MAPPER);
             String sqlGenres = "SELECT FG.FILM_ID ,FG.GENRE_ID,G.NAME FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID " +
                     "WHERE FILM_ID =:ID;";
-            jdbcTemplate.query(sqlGenres, Map.of("ID", id), new RowCallbackHandler() {
-                @Override
-                public void processRow(ResultSet rs) throws SQLException {
-                    film.getGenres()
-                            .add(new Genre(rs.getInt("GENRE_ID"), rs.getString("NAME")));
-                }
+            jdbcTemplate.query(sqlGenres, Map.of("ID", id), rs -> {
+                film.getGenres()
+                        .add(new Genre(rs.getInt("GENRE_ID"), rs.getString("NAME")));
             });
             return film;
         } catch (EmptyResultDataAccessException e) {

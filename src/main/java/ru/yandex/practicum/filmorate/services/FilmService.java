@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
@@ -26,7 +25,7 @@ public class FilmService {
     private final UserService userService;
 
     @Autowired
-    public FilmService(@Qualifier("filmDAO") FilmStorage filmStorage, LikesStorage likesStorage, UserService userService) {
+    public FilmService(FilmStorage filmStorage, LikesStorage likesStorage, UserService userService) {
         this.filmStorage = filmStorage;
         this.likesStorage = likesStorage;
         this.userService = userService;
