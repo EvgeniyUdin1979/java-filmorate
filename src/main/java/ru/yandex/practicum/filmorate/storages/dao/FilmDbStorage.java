@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.storages.dao;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -9,6 +11,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -20,6 +24,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 @Repository("filmDAO")
+@Slf4j
 public class FilmDbStorage implements FilmStorage {
     private static final RowMapper<Film> FILM_ROW_MAPPER = (rs, rowNum) -> new Film(rs.getInt("FILM_ID"),
             rs.getString("FILM_NAME"),
@@ -27,7 +32,8 @@ public class FilmDbStorage implements FilmStorage {
             rs.getDate("FILM_RELEASE_DATE").toLocalDate(),
             rs.getInt("FILM_DURATION"),
             rs.getInt("FILM_LIKE_QUANTITY"),
-            new Mpa(rs.getInt("RATING_ID"), rs.getString("RATING_NAME")));
+            new Mpa(rs.getInt("RATING_ID"), rs.getString("RATING_NAME")),
+            new Director(rs.getInt("DIRECTOR_ID"), rs.getString("DIRECTOR_NAME")));
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final DataSource dataSource;
@@ -47,8 +53,11 @@ public class FilmDbStorage implements FilmStorage {
                 "F.DURATION AS FILM_DURATION, \n" +
                 "F.LIKE_QUANTITY AS FILM_LIKE_QUANTITY,\n" +
                 "R.ID AS RATING_ID,\n" +
-                "R.NAME AS RATING_NAME \n" +
+                "R.NAME AS RATING_NAME, \n" +
+                "D.ID AS DIRECTOR_ID," +
+                "D.NAME AS DIRECTOR_NAME " +
                 "FROM FILM F\n" +
+                "JOIN DIRECTOR D ON D.ID = F.DIRECTOR_ID \n" +
                 "JOIN RATING R ON R.ID = F.RATING_ID;";
         List<Film> films = jdbcTemplate.query(sql, FILM_ROW_MAPPER);
         String sqlGenres = "SELECT FG.FILM_ID ,FG.GENRE_ID,G.NAME FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID\n" +
@@ -84,9 +93,12 @@ public class FilmDbStorage implements FilmStorage {
                     "F.DURATION AS FILM_DURATION, " +
                     "F.LIKE_QUANTITY AS FILM_LIKE_QUANTITY, " +
                     "R.ID AS RATING_ID," +
-                    "R.NAME AS RATING_NAME " +
+                    "R.NAME AS RATING_NAME, " +
+                    "D.ID AS DIRECTOR_ID," +
+                    "D.NAME AS DIRECTOR_NAME " +
                     "FROM FILM F " +
                     "JOIN RATING R ON R.ID = F.RATING_ID " +
+                    "JOIN DIRECTOR D ON D.ID = F.DIRECTOR_ID " +
                     "WHERE F.ID = :ID;";
             Film film = jdbcTemplate.queryForObject(sql, Map.of("ID", id), FILM_ROW_MAPPER);
             String sqlGenres = "SELECT FG.FILM_ID ,FG.GENRE_ID,G.NAME FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID " +
@@ -112,7 +124,8 @@ public class FilmDbStorage implements FilmStorage {
                 .addValue("RELEASE_DATE", film.getReleaseDate())
                 .addValue("DURATION", film.getDuration())
                 .addValue("LIKE_QUANTITY", film.getLikesQuantity())
-                .addValue("RATING_ID", film.getMpa().getId());
+                .addValue("RATING_ID", film.getMpa().getId())
+                .addValue("DIRECTOR_ID", film.getDirector().getId());
         SimpleJdbcInsert insert = new SimpleJdbcInsert(dataSource).withTableName("FILM")
                 .usingGeneratedKeyColumns("ID");
         int id = insert.executeAndReturnKey(param).intValue();
@@ -128,8 +141,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-        String sql = "MERGE INTO FILM (ID,NAME,DESCRIPTION,RELEASE_DATE,DURATION,LIKE_QUANTITY,RATING_ID)" +
-                " VALUES (:ID,:NAME,:DESCRIPTION,:RELEASE_DATE,:DURATION,:LIKE_QUANTITY,:RATING_ID)";
+        String sql = "MERGE INTO FILM (ID,NAME,DESCRIPTION,RELEASE_DATE,DURATION,LIKE_QUANTITY,RATING_ID,DIRECTOR_ID)" +
+                " VALUES (:ID,:NAME,:DESCRIPTION,:RELEASE_DATE,:DURATION,:LIKE_QUANTITY,:RATING_ID,:DIRECTOR_ID)";
         SqlParameterSource param = new MapSqlParameterSource()
                 .addValue("ID", film.getId())
                 .addValue("NAME", film.getName())
@@ -137,7 +150,8 @@ public class FilmDbStorage implements FilmStorage {
                 .addValue("RELEASE_DATE", film.getReleaseDate())
                 .addValue("DURATION", film.getDuration())
                 .addValue("LIKE_QUANTITY", film.getLikesQuantity())
-                .addValue("RATING_ID", film.getMpa().getId());
+                .addValue("RATING_ID", film.getMpa().getId())
+                .addValue("DIRECTOR_ID", film.getDirector().getId());
         jdbcTemplate.update(sql, param);
         jdbcTemplate.update("DELETE FROM FILM_X_GENRE WHERE FILM_ID IN (SELECT FILM_ID FROM FILM_X_GENRE WHERE FILM_ID = :ID);", Map.of("ID", film.getId()));
         addGenres(film.getId(), new ArrayList<>(film.getGenres()));
@@ -159,6 +173,63 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update("DELETE FROM FILM; ALTER TABLE FILM ALTER COLUMN ID RESTART WITH 1", Map.of());
     }
 
+    @Override
+    public List<Film> getFilmsByDirector(int directorId, Optional<String> sortBy) {
+        String order;
+        if (sortBy.isPresent()) {
+            if (sortBy.get().equals("year")) {
+                order = "FILM_RELEASE_DATE";
+            }
+            if (sortBy.get().equals("likes")) {
+                order = "FILM_LIKE_QUANTITY";
+            }
+            String messageError = "Параметр sortBy указан не верно!";
+            log.info(messageError, HttpStatus.BAD_REQUEST);
+            throw new UserRequestException(messageError, HttpStatus.BAD_REQUEST);
+        } else {
+            order = "FILM_ID";
+        }
+
+
+        // Я, если честно, очень боюсь тут что-то трогать, ибо читаемость этого всего на уровне арабской вязи.
+        String sql = "SELECT F.ID AS FILM_ID,\n" +
+                "F.NAME AS FILM_NAME,\n" +
+                "F.DESCRIPTION AS FILM_DESCRIPTION, \n" +
+                "F.RELEASE_DATE AS FILM_RELEASE_DATE, \n" +
+                "F.DURATION AS FILM_DURATION, \n" +
+                "F.LIKE_QUANTITY AS FILM_LIKE_QUANTITY,\n" +
+                "R.ID AS RATING_ID,\n" +
+                "R.NAME AS RATING_NAME, \n" +
+                "D.ID AS DIRECTOR_ID," +
+                "D.NAME AS DIRECTOR_NAME " +
+                "FROM FILM F\n" +
+                "JOIN DIRECTOR D ON D.ID = F.DIRECTOR_ID \n" +
+                "JOIN RATING R ON R.ID = F.RATING_ID \n" +
+                "WHERE DIRECTOR_ID = " + directorId + " \n" +
+                "ORDER BY " + order + ";";
+        List<Film> films = jdbcTemplate.query(sql, FILM_ROW_MAPPER);
+        String sqlGenres = "SELECT FG.FILM_ID ,FG.GENRE_ID,G.NAME FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID\n" +
+                "WHERE FILM_ID IN (SELECT ID FROM FILM);";
+        HashMap<Integer, Set<Genre>> map = new HashMap<>();
+        jdbcTemplate.query(sqlGenres, rs -> {
+            Genre genre = new Genre(rs.getInt("GENRE_ID"), rs.getString("NAME"));
+            int key = rs.getInt("FILM_ID");
+            if (map.containsKey(key)) {
+                map.get(key).add(genre);
+            } else {
+                Set<Genre> genres = new HashSet<>();
+                genres.add(genre);
+                map.put(key, genres);
+            }
+        });
+        for (Film film : films) {
+            if (map.containsKey(film.getId())) {
+                film.getGenres().addAll(map.get(film.getId()));
+            }
+        }
+        return films;
+    }
+
     static class FilmMapper implements RowMapper<Film> {
 
         @Override
@@ -169,7 +240,8 @@ public class FilmDbStorage implements FilmStorage {
                     rs.getDate("FILM_RELEASE_DATE").toLocalDate(),
                     rs.getInt("FILM_DURATION"),
                     rs.getInt("FILM_LIKE_QUANTITY"),
-                    new Mpa(rs.getInt("RATING_ID"), rs.getString("RATING_NAME")));
+                    new Mpa(rs.getInt("RATING_ID"), rs.getString("RATING_NAME")),
+                    new Director(rs.getInt("DIRECTOR_ID"), rs.getString("DIRECTOR_NAME")));
         }
     }
 }

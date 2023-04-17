@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.controllers.errors;
 
 import org.springframework.http.HttpStatus;
 
-public class IdFormatException extends FilmRequestException{
+public class IdFormatException extends FilmRequestException {
     public IdFormatException(HttpStatus codeStatus) {
         super(codeStatus);
     }

@@ -43,6 +43,8 @@ public class Film {
 
     private Mpa mpa;
 
+    private Director director;
+
     private final Set<Genre> genres = new HashSet<>();
 
     @JsonCreator
@@ -52,7 +54,8 @@ public class Film {
                 @JsonProperty("releaseDate") LocalDate releaseDate,
                 @JsonProperty("duration") int duration,
                 @JsonProperty("likesQuantity") int likesQuantity,
-                @JsonProperty("mpa") Mpa mpa) {
+                @JsonProperty("mpa") Mpa mpa,
+                @JsonProperty("director") Director director) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -60,6 +63,7 @@ public class Film {
         this.duration = duration;
         this.likesQuantity = likesQuantity;
         this.mpa = mpa;
+        this.director = director;
     }
 
 

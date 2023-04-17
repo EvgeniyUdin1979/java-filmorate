@@ -100,4 +100,9 @@ public class FilmController {
         service.removeAll();
     }
 
+    @GetMapping("/director/{directorId}")
+    public List<Film> getByDirector(@PathVariable("directorId") int directorId,
+                                    @RequestParam Optional<String> sortBy) {
+        return service.getFilmsByDirector(directorId, sortBy);
+    }
 }
