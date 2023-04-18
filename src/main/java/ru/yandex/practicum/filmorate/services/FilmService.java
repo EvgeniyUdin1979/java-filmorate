@@ -81,9 +81,10 @@ public class FilmService {
         likesStorage.remove(user, film);
     }
 
-    public List<Film> getFilmsByDirector(int directorId, Optional<String> sortBy) {
+    public List<Film> getFilmsByDirector(String directorId, Optional<String> sortBy) {
+        int id = validateAndParseInt(directorId);
         directorService.findById(directorId);
-        return filmStorage.getFilmsByDirector(directorId, sortBy);
+        return filmStorage.getFilmsByDirector(id, sortBy);
     }
 
     public List<Film> mostPopularFilm(int count) {
