@@ -286,13 +286,13 @@ public class FilmDbStorage implements FilmStorage {
                 "JOIN RATING R ON R.ID = F.RATING_ID " +
                 "LEFT JOIN FILM_X_DIRECTOR AS FD ON F.ID = FD.FILM_ID  " +
                 "LEFT JOIN DIRECTOR AS D ON FD.DIRECTOR_ID = D.ID ";
-        String[] search = by.split(",");
+        List<String> search = List.of(by.split(","));
         String sqlSearch = "";
-        if (search.length == 1 && search[0] == "title") {
+        if (search.contains("title") && search.size() == 1) {
             sqlSearch = "WHERE F.NAME ILIKE :query";
-        } else if (search.length == 1 && search[0] == "director") {
+        } else if (search.contains("director") && search.size() == 1) {
             sqlSearch = "WHERE D.NAME ILIKE :query";
-        } else {
+        } else if (search.contains("title") && search.contains("director") && search.size() == 2) {
             sqlSearch = "WHERE F.NAME ILIKE :query OR D.NAME ILIKE :query";
         }
         String sqlOrd = "ORDER BY F.LIKE_QUANTITY DESC";
