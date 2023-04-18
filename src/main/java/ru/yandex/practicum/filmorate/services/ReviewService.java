@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storages.FilmStorage;
 import ru.yandex.practicum.filmorate.storages.ReviewStorage;
-import ru.yandex.practicum.filmorate.storages.dao.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storages.dao.UserDbStorage;
+import ru.yandex.practicum.filmorate.storages.UserStorage;
 
 import java.util.List;
 
@@ -17,8 +17,8 @@ import java.util.List;
 public class ReviewService {
 
     private final ReviewStorage storage;
-    private final FilmDbStorage filmDbStorage;
-    private final UserDbStorage userDbStorage;
+    private final FilmStorage filmDbStorage;
+    private final UserStorage userDbStorage;
 
     public Review saveReview(Review review) {
         validateUserNotExists(review.getUserId());
@@ -50,12 +50,12 @@ public class ReviewService {
         return storage.find(id);
     }
 
-    public List<Review> getReviews(String filmId, String num) {
-        if (filmId == null || filmId.isBlank()) {
-            return storage.findAll(Integer.parseInt(num));
+    public List<Review> getReviews(Integer filmId, Integer num) {
+        if (filmId == null) {
+            return storage.findAll(num);
         } else {
-            validateFilmNotExists(Integer.parseInt(filmId));
-            return storage.findAllByFilmId(Integer.parseInt(filmId), Integer.parseInt(num));
+            validateFilmNotExists(filmId);
+            return storage.findAllByFilmId(filmId, num);
         }
     }
 

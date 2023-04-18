@@ -37,8 +37,8 @@ public class ReviewController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Review>> getReviews(@RequestParam(value = "filmId", required = false) String filmId,
-                                                   @RequestParam(value = "count", defaultValue = "10") String count) {
+    public ResponseEntity<List<Review>> getReviews(@RequestParam(value = "filmId", required = false) Integer filmId,
+                                                   @RequestParam(value = "count", defaultValue = "10") Integer count) {
         return ResponseEntity.ok().body(service.getReviews(filmId, count));
     }
 
