@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Sql(scripts={"file:src/test/resources/data/review/init-data.sql"})
+@Sql(scripts = "file:src/test/resources/data/review/init-data.sql")
 @TestPropertySource(locations = "classpath:application-integrationtest.properties")
 public class ReviewControllerTest {
 
