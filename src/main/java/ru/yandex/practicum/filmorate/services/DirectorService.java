@@ -36,7 +36,7 @@ public class DirectorService {
             log.info(message, director);
             throw new FilmRequestException(message);
         }
-        storage.findById(director.getId());
+        findById(String.valueOf(director.getId()));
         return storage.update(director);
     }
 
@@ -46,7 +46,7 @@ public class DirectorService {
 
     public void deleteById(String userId) {
         int id = validateAndParseInt(userId);
-        storage.findById(id);
+        findById(String.valueOf(id));
         storage.removeById(id);
     }
 
