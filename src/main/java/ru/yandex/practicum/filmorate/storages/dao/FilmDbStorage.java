@@ -277,28 +277,25 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilmBySearch(String query, String by) {
-
-        String sqlAllFilms = "SELECT F.ID AS FILM_ID, F.NAME AS FILM_NAME, " +
+        StringBuilder sql = new StringBuilder("SELECT F.ID AS FILM_ID, F.NAME AS FILM_NAME, " +
                 "F.DESCRIPTION AS FILM_DESCRIPTION, F.RELEASE_DATE AS FILM_RELEASE_DATE, " +
                 "F.DURATION AS FILM_DURATION, F.LIKE_QUANTITY AS FILM_LIKE_QUANTITY, " +
                 "R.ID AS RATING_ID, R.NAME AS RATING_NAME, D.NAME " +
                 "FROM FILM F " +
                 "JOIN RATING R ON R.ID = F.RATING_ID " +
                 "LEFT JOIN FILM_X_DIRECTOR AS FD ON F.ID = FD.FILM_ID  " +
-                "LEFT JOIN DIRECTOR AS D ON FD.DIRECTOR_ID = D.ID ";
+                "LEFT JOIN DIRECTOR AS D ON FD.DIRECTOR_ID = D.ID ");
         List<String> search = List.of(by.split(","));
-        String sqlSearch = "";
         if (search.contains("title") && search.size() == 1) {
-            sqlSearch = "WHERE F.NAME ILIKE :query";
+            sql.append("WHERE F.NAME ILIKE :query ");
         } else if (search.contains("director") && search.size() == 1) {
-            sqlSearch = "WHERE D.NAME ILIKE :query";
+            sql.append("WHERE D.NAME ILIKE :query ");
         } else if (search.contains("title") && search.contains("director") && search.size() == 2) {
-            sqlSearch = "WHERE F.NAME ILIKE :query OR D.NAME ILIKE :query";
+            sql.append("WHERE F.NAME ILIKE :query OR D.NAME ILIKE :query ");
         }
-        String sqlOrd = "ORDER BY F.LIKE_QUANTITY DESC";
-        SqlParameterSource parameters = new MapSqlParameterSource().addValue("query", "'%" + "query" + "%'");
-
-        List<Film> films = jdbcTemplate.query(String.format(sqlAllFilms, sqlSearch, sqlOrd), parameters, FILM_ROW_MAPPER);
+        sql.append("ORDER BY F.LIKE_QUANTITY DESC;");
+        SqlParameterSource parameters = new MapSqlParameterSource().addValue("query", "%" + query + "%");
+        List<Film> films = jdbcTemplate.query(sql.toString(), parameters, FILM_ROW_MAPPER);
 
         String sqlGenres = "SELECT FG.FILM_ID, FG.GENRE_ID, G.NAME " +
                 "FROM FILM_X_GENRE FG JOIN GENRE G ON G.ID = FG.GENRE_ID " +

@@ -106,6 +106,7 @@ public class FilmController {
                                     @RequestParam Optional<String> sortBy) {
         return service.getFilmsByDirector(directorId, sortBy);
     }
+
     @GetMapping("/search")
     public List<Film> getFilmBySearch (@RequestParam("query") @NotNull String query,
                                        @RequestParam("by") @NotNull String by) {
