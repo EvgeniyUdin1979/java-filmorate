@@ -13,8 +13,8 @@ import java.util.List;
 @RequestMapping(value = "/directors")
 public class DirectorController {
 
-    @Autowired
-    DirectorService service;
+
+    private final DirectorService service;
 
     @GetMapping
     public List<Director> getAll() {
@@ -23,7 +23,7 @@ public class DirectorController {
     }
 
     @GetMapping(value = "/{id}")
-    public Director getDirectorById(@PathVariable("id") int id) {
+    public Director getDirectorById(@PathVariable("id") String id) {
         Director director = service.findById(id);
         log.info(String.format("Получены данные по режиссёру id: %s.", id));
         return director;
@@ -53,5 +53,10 @@ public class DirectorController {
     public void reset() {
         log.info("DirectorStorage очищена.");
         service.removeAll();
+    }
+
+    @Autowired
+    public DirectorController(DirectorService service) {
+        this.service = service;
     }
 }

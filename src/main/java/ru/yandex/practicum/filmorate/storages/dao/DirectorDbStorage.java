@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storages.dao;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -16,10 +17,12 @@ import java.util.Map;
 
 @Repository("directorDAO")
 public class DirectorDbStorage implements DirectorStorage {
-    private static final RowMapper<Director> DIRECTOR_ROW_MAPPER = (rs, rowNum) -> new Director(rs.getInt("ID"), rs.getString("NAME"));
+    private static final RowMapper<Director> DIRECTOR_ROW_MAPPER = (rs, rowNum) ->
+            new Director(rs.getInt("ID"), rs.getString("NAME"));
     private NamedParameterJdbcTemplate jdbcTemplate;
     private DataSource dataSource;
 
+    @Autowired
     public DirectorDbStorage(DataSource dataSource) {
         this.dataSource = dataSource;
         this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
@@ -33,7 +36,8 @@ public class DirectorDbStorage implements DirectorStorage {
     @Override
     public Director findById(int id) {
         try {
-            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM DIRECTOR WHERE ID = :ID;", Map.of("ID", id), DIRECTOR_ROW_MAPPER);
+            return jdbcTemplate.queryForObject("SELECT ID, NAME FROM DIRECTOR WHERE ID = :ID;",
+                    Map.of("ID", id), DIRECTOR_ROW_MAPPER);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

@@ -13,14 +13,15 @@ import java.util.List;
 @Slf4j
 @Service
 public class DirectorService {
-    @Autowired
-    DirectorStorage storage;
+
+    private final DirectorStorage storage;
 
     public List<Director> findAll() {
         return storage.findAll();
     }
 
-    public Director findById(int id) {
+    public Director findById(String userId) {
+        int id = validateAndParseInt(userId);
         Director director = storage.findById(id);
         if (director == null) {
             // Я думаю можно оставить FilmRequestException, не создавая новую ошибку.
@@ -35,25 +36,27 @@ public class DirectorService {
             log.info(message, director);
             throw new FilmRequestException(message);
         }
-        findById(director.getId());
+        storage.findById(director.getId());
         return storage.update(director);
     }
 
     public Director createDirector(Director director) {
-        if (director.getName() == null || director.getName().isEmpty() || director.getName().isBlank()) {
-            throw new FilmRequestException("Имя режиссёра пустое!", HttpStatus.BAD_REQUEST);
-        }
         return storage.create(director);
     }
 
     public void deleteById(String userId) {
         int id = validateAndParseInt(userId);
-        findById(id);
+        storage.findById(id);
         storage.removeById(id);
     }
 
     public void removeAll() {
         storage.removeAll();
+    }
+
+    @Autowired
+    public DirectorService(DirectorStorage storage) {
+        this.storage = storage;
     }
 
     private int validateAndParseInt(String id) {
