@@ -43,7 +43,9 @@ public class Film {
 
     private Mpa mpa;
 
+
     private final Set<Genre> genres = new HashSet<>();
+    private final Set<Director> directors = new HashSet<>();
 
     @JsonCreator
     public Film(@JsonProperty("id") int id,
