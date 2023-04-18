@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.storages.FilmStorage;
 import ru.yandex.practicum.filmorate.storages.LikesStorage;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -26,13 +27,15 @@ public class FilmService {
     private final LikesStorage likesStorage;
     private final UserService userService;
     private final EventService eventService;
+    private final DirectorService directorService;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, LikesStorage likesStorage, UserService userService, EventService eventService) {
+    public FilmService(FilmStorage filmStorage, LikesStorage likesStorage, UserService userService, EventService eventService, DirectorService directorService) {
         this.filmStorage = filmStorage;
         this.likesStorage = likesStorage;
         this.userService = userService;
         this.eventService = eventService;
+        this.directorService = directorService;
     }
 
     public List<Film> findAll() {
@@ -93,6 +96,12 @@ public class FilmService {
                 .operation(Operation.REMOVE)
                 .entityId(film)
                 .build());
+    }
+
+    public List<Film> getFilmsByDirector(String directorId, Optional<String> sortBy) {
+        int id = validateAndParseInt(directorId);
+        directorService.findById(directorId);
+        return filmStorage.getFilmsByDirector(id, sortBy);
     }
 
     public List<Film> mostPopularFilm(int count) {
