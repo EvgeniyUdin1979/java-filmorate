@@ -20,5 +20,7 @@ public interface FilmStorage {
 
     List<Film> getFilmBySearch(String query, String by);
 
+    boolean exists(int id);
+
     List<Film> getFilmsByDirector(int directorId, Optional<String> sortBy);
 }
