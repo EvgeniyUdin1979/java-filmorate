@@ -87,4 +87,10 @@ public class UserDbStorage implements UserStorage {
     public void removeAll() {
         jdbcTemplate.update("DELETE FROM USERS; ALTER TABLE USERS ALTER COLUMN ID RESTART WITH 1;", Map.of());
     }
+
+    @Override
+    public boolean exists(int id) {
+        String query = "SELECT EXISTS(SELECT * FROM users WHERE id = :ID)";
+        return jdbcTemplate.queryForObject(query, Map.of("ID", id), Boolean.class);
+    }
 }

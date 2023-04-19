@@ -1,0 +1,3 @@
+[{"reviewId":102,"content":"Some content 1","isPositive":true,"userId":102,"filmId":102,"useful":2},{"reviewId":100,"content":"Some content 1","isPositive":true,"userId":100,"filmId":100,"useful":0},{"reviewId":101,"content":"Some content 1","isPositive":true,"userId":101,"filmId":101,"useful":-2}]|?count
+[{"reviewId":102,"content":"Some content 1","isPositive":true,"userId":102,"filmId":102,"useful":2}]|?count=1
+[{"reviewId":100,"content":"Some content 1","isPositive":true,"userId":100,"filmId":100,"useful":0}]|?filmId=100

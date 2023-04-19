@@ -203,6 +203,12 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public boolean exists(int id) {
+        String query = "SELECT EXISTS(SELECT * FROM film WHERE id = :ID)";
+        return jdbcTemplate.queryForObject(query, Map.of("ID", id), Boolean.class);
+    }
+
+    @Override
     public List<Film> getFilmsByDirector(int directorId, Optional<String> sortBy) {
         String order;
         if (sortBy.isPresent()) {
