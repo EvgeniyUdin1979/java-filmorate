@@ -18,5 +18,7 @@ public interface FilmStorage {
 
     void removeAll();
 
+    boolean exists(int id);
+
     List<Film> getFilmsByDirector(int directorId, Optional<String> sortBy);
 }

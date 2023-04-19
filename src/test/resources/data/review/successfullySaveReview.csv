@@ -1,0 +1,4 @@
+{"content": "This film is sooo bad.","isPositive": false,"userId": 100,"filmId": 101}|,"content":"This film is sooo bad.","isPositive":false,"userId":100,"filmId":101,"useful":0}
+{"content": "This film is sooo good.","isPositive": true,"userId": 101,"filmId": 101}|"content":"This film is sooo good.","isPositive":true,"userId":101,"filmId":101,"useful":0}
+{"content": "This film is great!","isPositive": true,"userId": 101,"filmId": 100}|,"content":"This film is great!","isPositive":true,"userId":101,"filmId":100,"useful":0}
+{"content": "This film is sucks.","isPositive": false,"userId": 100,"filmId": 100}|,"content":"This film is sucks.","isPositive":false,"userId":100,"filmId":100,"useful":0}
