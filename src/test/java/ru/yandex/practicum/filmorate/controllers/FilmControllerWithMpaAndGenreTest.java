@@ -25,8 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK/*,
-        classes = Application.class*/)
+        webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @TestPropertySource(
         locations = "classpath:application-integrationtest.properties")
