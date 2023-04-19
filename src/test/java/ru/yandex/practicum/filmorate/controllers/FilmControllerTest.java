@@ -251,6 +251,50 @@ class FilmControllerTest {
     }
 
     @Test
+    void addLikeAndCheckFeed() throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        upData("src/test/resources/files/userslist.txt", "/users");
+        this.mockMvc.perform(put("/films/2/like/1")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get("/users/1/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType("application/json; charset=utf-8"),
+                        jsonPath("$.length()").value(1),
+                        jsonPath("$.[0]userId").value(1),
+                        jsonPath("$.[0]eventType").value("LIKE"),
+                        jsonPath("$.[0]operation").value("ADD"),
+                        jsonPath("$.[0]entityId").value(2)
+                );
+    }
+
+    @Test
+    void removeLikeAndCheckFeed() throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        upData("src/test/resources/files/userslist.txt", "/users");
+        this.mockMvc.perform(delete("/films/2/like/1")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get("/users/1/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType("application/json; charset=utf-8"),
+                        jsonPath("$.length()").value(1),
+                        jsonPath("$.[0]userId").value(1),
+                        jsonPath("$.[0]eventType").value("LIKE"),
+                        jsonPath("$.[0]operation").value("REMOVE"),
+                        jsonPath("$.[0]entityId").value(2)
+                );
+    }
+
+    @Test
     void getPopularFilmsWithoutCount() throws Exception {
         upData("src/test/resources/files/filmslist.txt", "/films");
         this.mockMvc.perform(get("/films/popular")
