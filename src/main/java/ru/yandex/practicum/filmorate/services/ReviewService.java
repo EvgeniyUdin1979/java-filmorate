@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storages.FilmStorage;
 import ru.yandex.practicum.filmorate.storages.ReviewStorage;
 import ru.yandex.practicum.filmorate.storages.UserStorage;
@@ -19,11 +22,18 @@ public class ReviewService {
     private final ReviewStorage storage;
     private final FilmStorage filmDbStorage;
     private final UserStorage userDbStorage;
+    private final EventService eventService;
 
     public Review saveReview(Review review) {
         validateUserNotExists(review.getUserId());
         validateFilmNotExists(review.getFilmId());
         review = storage.save(review);
+        eventService.addEvent(Event.builder()
+                .userId(review.getUserId())
+                .eventType(EventType.REVIEW)
+                .operation(Operation.ADD)
+                .entityId(review.getReviewId())
+                .build());
         log.info(String.format("Отзыв с id(%d) успешно сохранен!", review.getReviewId()));
         return review;
     }
@@ -33,13 +43,26 @@ public class ReviewService {
         validateFilmNotExists(review.getFilmId());
         validateUserNotExists(review.getUserId());
         review = storage.update(review);
+        eventService.addEvent(Event.builder()
+                .userId(review.getUserId())
+                .eventType(EventType.REVIEW)
+                .operation(Operation.UPDATE)
+                .entityId(review.getReviewId())
+                .build());
         log.info(String.format("Отзыв с id(%d) успешно обновлен!", review.getReviewId()));
         return review;
     }
 
     public String deleteReview(int id) {
         validateReviewNotExists(id);
+        Review review = getReview(id);
         storage.delete(id);
+        eventService.addEvent(Event.builder()
+                .userId(review.getUserId())
+                .eventType(EventType.REVIEW)
+                .operation(Operation.REMOVE)
+                .entityId(review.getReviewId())
+                .build());
         String message = String.format("Отзыв с id(%d) успешно удален!", id);
         log.info(message);
         return message;

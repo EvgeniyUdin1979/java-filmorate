@@ -327,4 +327,115 @@ class UserControllerTest {
                         status().isBadRequest(),
                         content().string("{\"message\":\"Данный id: @, не целое число!\"}"));
     }
+
+    @Test
+    void addReviewAndCheckFeed() throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        upData("src/test/resources/files/userslist.txt", "/users");
+
+        String json = "{\n" +
+                "  \"content\": \"This film is soo bad.\",\n" +
+                "  \"isPositive\": false,\n" +
+                "  \"userId\": 1,\n" +
+                "  \"filmId\": 7\n" +
+                "}";
+
+        this.mockMvc.perform(post("/reviews")
+                        .content(json)
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andExpect(status().isCreated());
+
+        this.mockMvc.perform(get("/users/1/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType("application/json; charset=utf-8"),
+                        jsonPath("$.length()").value(1),
+                        jsonPath("$.[0]userId").value(1),
+                        jsonPath("$.[0]eventType").value("REVIEW"),
+                        jsonPath("$.[0]operation").value("ADD"),
+                        jsonPath("$.[0]entityId").value(7)
+                );
+    }
+
+    @Test
+    void updateReviewAndCheckFeed() throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        upData("src/test/resources/files/userslist.txt", "/users");
+
+        String json = "{\n" +
+                "  \"content\": \"This film is soo bad.\",\n" +
+                "  \"isPositive\": false,\n" +
+                "  \"userId\": 1,\n" +
+                "  \"filmId\": 5\n" +
+                "}";
+
+        this.mockMvc.perform(post("/reviews")
+                        .content(json)
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andExpect(status().isCreated());
+
+        json = "{\n" +
+                "  \"reviewId\": 5,\n" +
+                "  \"content\": \"This film is not too bad.\",\n" +
+                "  \"isPositive\": true,\n" +
+                "  \"userId\": 1,\n" +
+                "  \"filmId\": 5,\n" +
+                "  \"useful\": 10\n" +
+                "}";
+
+        this.mockMvc.perform(put("/reviews")
+                        .content(json)
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get("/users/1/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType("application/json; charset=utf-8"),
+                        jsonPath("$.length()").value(2),
+                        jsonPath("$.[1]userId").value(1),
+                        jsonPath("$.[1]eventType").value("REVIEW"),
+                        jsonPath("$.[1]operation").value("UPDATE"),
+                        jsonPath("$.[1]entityId").value(5)
+                );
+    }
+
+    @Test
+    void deleteReviewAndCheckFeed() throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        upData("src/test/resources/files/userslist.txt", "/users");
+
+        String json = "{\n" +
+                "  \"content\": \"This film is soo bad.\",\n" +
+                "  \"isPositive\": false,\n" +
+                "  \"userId\": 1,\n" +
+                "  \"filmId\": 6\n" +
+                "}";
+
+        this.mockMvc.perform(post("/reviews")
+                        .content(json)
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andExpect(status().isCreated());
+
+        this.mockMvc.perform(delete("/reviews/6")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get("/users/1/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType("application/json; charset=utf-8"),
+                        jsonPath("$.length()").value(2),
+                        jsonPath("$.[1]userId").value(1),
+                        jsonPath("$.[1]eventType").value("REVIEW"),
+                        jsonPath("$.[1]operation").value("REMOVE"),
+                        jsonPath("$.[1]entityId").value(6)
+                );
+    }
 }
