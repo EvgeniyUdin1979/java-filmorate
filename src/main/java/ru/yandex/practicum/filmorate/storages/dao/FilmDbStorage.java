@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.storages.dao;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.RowMapper;
@@ -10,20 +10,23 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.controllers.errors.NotFoundException;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storages.FilmStorage;
+import ru.yandex.practicum.filmorate.storages.dao.mappers.FilmRowMapper;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-@Repository("filmDAO")
 @Slf4j
+@Repository("filmDAO")
+@RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private static final RowMapper<Film> FILM_ROW_MAPPER = (rs, rowNum) -> new Film(rs.getInt("FILM_ID"),
             rs.getString("FILM_NAME"),
@@ -35,12 +38,6 @@ public class FilmDbStorage implements FilmStorage {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final DataSource dataSource;
-
-    @Autowired
-    public FilmDbStorage(DataSource dataSource) {
-        this.dataSource = dataSource;
-        this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-    }
 
     @Override
     public List<Film> findAll() {
@@ -279,6 +276,53 @@ public class FilmDbStorage implements FilmStorage {
             }
         }
         return films;
+    }
+
+    @Override
+    public List<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
+        Map<String, Integer> params = new HashMap<>();
+        params.put("COUNT", count);
+        String sql = "SELECT f.*,r.name AS rating_name, " +
+                "COUNT(l.user_id) AS film_like_quantity,GROUP_CONCAT(l.user_id) AS likes, " +
+                "GROUP_CONCAT(CONCAT(g.id,'@',g.name) ORDER BY g.id) AS genres," +
+                "GROUP_CONCAT(CONCAT(d.id,'@',d.name) ORDER BY d.id) AS directors " +
+                "FROM film AS f " +
+                "JOIN rating AS r ON f.rating_id = r.id " +
+                "LEFT JOIN likes AS l ON l.film_id = f.id " +
+                "LEFT JOIN film_x_genre AS fg ON f.id = fg.film_id " +
+                "LEFT JOIN genre AS g ON fg.genre_id = g.id " +
+                "LEFT JOIN film_x_director AS fd ON f.id = fd.director_id " +
+                "LEFT JOIN director AS d ON fd.director_id = d.id " +
+                "%s" +
+                "GROUP BY f.id " +
+                "%s" +
+                "ORDER BY film_like_quantity DESC " +
+                "LIMIT :COUNT;";
+        if (genreId != null && year != null) {
+            validateGenreId(genreId);
+            sql = String.format(sql, "WHERE EXTRACT(YEAR FROM f.RELEASE_DATE)::INT = :YEAR ",
+                    "HAVING genres LIKE CONCAT('%', :GENRE_ID,'@%') ");
+            params.put("GENRE_ID", genreId);
+            params.put("YEAR", year);
+        } else if (genreId != null) {
+            validateGenreId(genreId);
+            sql = String.format(sql, "", "HAVING genres LIKE CONCAT('%', :GENRE_ID,'@%') ");
+            params.put("GENRE_ID", genreId);
+        } else if (year != null) {
+            sql = String.format(sql, "WHERE EXTRACT(YEAR FROM f.RELEASE_DATE)::INT = :YEAR ", "");
+            params.put("YEAR", year);
+        } else {
+            sql = String.format(sql, "", "");
+        }
+        return jdbcTemplate.query(sql, params, new FilmRowMapper());
+    }
+
+    private void validateGenreId(Integer id) {
+        String query = "SELECT EXISTS(SELECT * FROM genre WHERE id = :ID)";
+        boolean exists = jdbcTemplate.queryForObject(query, Map.of("ID", id), Boolean.class);
+        if (!exists) {
+            throw new NotFoundException(String.format("Жанр с id(%d) не найден!", id));
+        }
     }
 
     static class FilmMapper implements RowMapper<Film> {

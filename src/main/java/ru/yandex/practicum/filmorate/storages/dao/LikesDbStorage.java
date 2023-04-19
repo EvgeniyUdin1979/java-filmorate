@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storages.dao;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.storages.LikesStorage;
@@ -9,12 +10,9 @@ import java.util.HashSet;
 import java.util.Map;
 
 @Repository
+@RequiredArgsConstructor
 public class LikesDbStorage implements LikesStorage {
     private final NamedParameterJdbcTemplate jdbcTemplate;
-
-    public LikesDbStorage(NamedParameterJdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public void add(int userId, int filmId) {

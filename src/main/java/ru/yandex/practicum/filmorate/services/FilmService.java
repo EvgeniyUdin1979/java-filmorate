@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.storages.LikesStorage;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -87,17 +86,6 @@ public class FilmService {
         return filmStorage.getFilmsByDirector(id, sortBy);
     }
 
-    public List<Film> mostPopularFilm(int count) {
-        return filmStorage.findAll().stream()
-                .sorted((o1, o2) -> o2.getLikesQuantity() - o1.getLikesQuantity())
-                .limit(count)
-                .collect(Collectors.toList());
-    }
-
-    public List<Film> mostPopularFilm() {
-        return mostPopularFilm(10);
-    }
-
     private int validateAndParseInt(String id) {
         try {
             return Integer.parseInt(id);
@@ -127,4 +115,21 @@ public class FilmService {
         }
         return user;
     }
+
+    public List<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
+        validateRequestParam(count, "count");
+        validateRequestParam(genreId, "genreId");
+        validateRequestParam(year, "year");
+        log.info("Получены популярные фильмы.");
+        return filmStorage.getMostPopular(count, genreId, year);
+    }
+
+    private void validateRequestParam(Integer param, String name) {
+        if (param != null && param < 1) {
+            String messageError = "Параметр " + name + " должен быть больше 0 или отсутствовать!";
+            log.warn(messageError, HttpStatus.BAD_REQUEST);
+            throw new FilmRequestException(messageError, HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

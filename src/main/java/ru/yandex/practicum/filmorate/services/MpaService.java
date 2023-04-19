@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.services;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
@@ -12,13 +12,9 @@ import java.util.List;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class MpaService {
-    MpaStorage storage;
-
-    @Autowired
-    public MpaService(MpaStorage storage) {
-        this.storage = storage;
-    }
+    private final MpaStorage storage;
 
     public List<Mpa> findAll() {
         return storage.findAll();

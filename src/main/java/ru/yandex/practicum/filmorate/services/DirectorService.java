@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.services;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
@@ -12,6 +12,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class DirectorService {
 
     private final DirectorStorage storage;
@@ -52,11 +53,6 @@ public class DirectorService {
 
     public void removeAll() {
         storage.removeAll();
-    }
-
-    @Autowired
-    public DirectorService(DirectorStorage storage) {
-        this.storage = storage;
     }
 
     private int validateAndParseInt(String id) {

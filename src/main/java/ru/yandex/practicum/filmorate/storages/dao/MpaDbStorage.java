@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storages.dao;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -13,14 +14,11 @@ import java.util.Map;
 
 @Repository
 @Slf4j
+@RequiredArgsConstructor
 public class MpaDbStorage implements MpaStorage {
 
     private static final RowMapper<Mpa> MPA_ROW_MAPPER = (rs, rowNum) -> new Mpa(rs.getInt("ID"), rs.getString("NAME"));
-    NamedParameterJdbcTemplate jdbcTemplate;
-
-    public MpaDbStorage(NamedParameterJdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
     public List<Mpa> findAll() {

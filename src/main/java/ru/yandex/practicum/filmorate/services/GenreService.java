@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.services;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -11,13 +12,9 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class GenreService {
-    GenreStorage storage;
-
-    public GenreService(GenreStorage storage) {
-        this.storage = storage;
-    }
-
+    private final GenreStorage storage;
 
     public List<Genre> findAll() {
         return storage.findAll();

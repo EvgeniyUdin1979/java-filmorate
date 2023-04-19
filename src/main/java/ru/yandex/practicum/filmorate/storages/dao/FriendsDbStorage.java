@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storages.dao;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
@@ -10,14 +10,10 @@ import java.util.List;
 import java.util.Map;
 
 @Repository
+@RequiredArgsConstructor
 public class FriendsDbStorage implements FriendsStorage {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public FriendsDbStorage(NamedParameterJdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     public List<Integer> findAllById(int id) {
         String sql = "SELECT USER_ID_2 FROM FRIENDS WHERE USER_ID_1 = :ID";

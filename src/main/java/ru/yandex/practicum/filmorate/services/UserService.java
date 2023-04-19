@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.services;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
@@ -17,20 +17,13 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
+
     private final UserStorage users;
     private final FriendsStorage friends;
     private final FilmStorage films;
-
     private final LikesStorage likes;
-
-    @Autowired
-    public UserService(UserStorage users, FriendsStorage friends, FilmStorage films, LikesStorage likes) {
-        this.users = users;
-        this.friends = friends;
-        this.films = films;
-        this.likes = likes;
-    }
 
     public List<User> findAll() {
         return users.findAll();

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,7 @@ import java.util.Set;
 
 @Getter
 @Setter
+@Builder
 @EqualsAndHashCode
 @JsonIgnoreProperties(value = {"likesQuantity"}, allowGetters = true)
 public class Film {
@@ -42,8 +44,6 @@ public class Film {
     private int likesQuantity;
 
     private Mpa mpa;
-
-
     private final Set<Genre> genres = new HashSet<>();
     private final Set<Director> directors = new HashSet<>();
 

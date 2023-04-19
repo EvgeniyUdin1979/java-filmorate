@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storages.dao;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -13,13 +14,10 @@ import java.util.Map;
 
 @Repository
 @Slf4j
+@RequiredArgsConstructor
 public class GenreDbStorage implements GenreStorage {
     private static final RowMapper<Genre> GENRE_ROW_MAPPER = (rs, rowNum) -> new Genre(rs.getInt("ID"), rs.getString("NAME"));
-    NamedParameterJdbcTemplate jdbcTemplate;
-
-    public GenreDbStorage(NamedParameterJdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private final NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
     public List<Genre> findAll() {
