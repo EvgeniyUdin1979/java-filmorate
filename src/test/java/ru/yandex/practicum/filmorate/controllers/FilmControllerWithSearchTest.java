@@ -71,7 +71,7 @@ public class FilmControllerWithSearchTest {
     }
 
     @Test
-    public void SearchFilmsAnywayByupDatE() throws Exception {
+    public void testSearchFilmsAnywayByupDatE() throws Exception {
         upData("src/test/resources/files/filmslist.txt", "/films");
         upData("src/test/resources/files/userslist.txt", "/users");
         initDate();
@@ -94,7 +94,7 @@ public class FilmControllerWithSearchTest {
     }
 
     @Test
-    public void SearchFilmsAnywayEmpty() throws Exception {
+    public void testSearchFilmsAnywayEmpty() throws Exception {
         upData("src/test/resources/files/filmslist.txt", "/films");
         upData("src/test/resources/files/userslist.txt", "/users");
         initDate();
@@ -112,7 +112,7 @@ public class FilmControllerWithSearchTest {
     }
 
     @Test
-    public void SearchFilmsByTitle() throws Exception {
+    public void testSearchFilmsByTitle() throws Exception {
         upData("src/test/resources/files/filmslist.txt", "/films");
         upData("src/test/resources/files/userslist.txt", "/users");
         initDate();
@@ -133,7 +133,7 @@ public class FilmControllerWithSearchTest {
     }
 
     @Test
-    public void SearchFilmsByDirector() throws Exception {
+    public void testSearchFilmsByDirector() throws Exception {
         upData("src/test/resources/files/filmslist.txt", "/films");
         upData("src/test/resources/files/userslist.txt", "/users");
         initDate();
