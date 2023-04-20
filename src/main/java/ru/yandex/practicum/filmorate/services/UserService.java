@@ -2,12 +2,16 @@ package ru.yandex.practicum.filmorate.services;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storages.FilmStorage;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storages.FriendsStorage;
 import ru.yandex.practicum.filmorate.storages.LikesStorage;
 import ru.yandex.practicum.filmorate.storages.UserStorage;
@@ -22,6 +26,7 @@ public class UserService {
 
     private final UserStorage users;
     private final FriendsStorage friends;
+    private final EventService eventService;
     private final FilmStorage films;
     private final LikesStorage likes;
 
@@ -64,6 +69,7 @@ public class UserService {
 
     public void removeAll() {
         users.removeAll();
+        eventService.removeAll();
     }
 
     public List<User> findFriends(String userId) {
@@ -87,6 +93,12 @@ public class UserService {
         findUserById(user);
         findUserById(friend);
         friends.add(user, friend);
+        eventService.addEvent(Event.builder()
+                .userId(user)
+                .eventType(EventType.FRIEND)
+                .operation(Operation.ADD)
+                .entityId(friend)
+                .build());
     }
 
     public void removeFriend(String userId, String friendId) {
@@ -95,6 +107,18 @@ public class UserService {
         findUserById(user);
         findUserById(friend);
         friends.remove(user, friend);
+        eventService.addEvent(Event.builder()
+                .userId(user)
+                .eventType(EventType.FRIEND)
+                .operation(Operation.REMOVE)
+                .entityId(friend)
+                .build());
+    }
+
+    public List<Event> getEvents(String userId) {
+        int user = validateAndParseInt(userId);
+        findUserById(user);
+        return eventService.findByUserId(user);
     }
 
     public List<Film> recommend(String userId) {

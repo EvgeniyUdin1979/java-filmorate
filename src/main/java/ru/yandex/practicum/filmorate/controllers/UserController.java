@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controllers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.services.UserService;
@@ -90,7 +91,12 @@ public class UserController {
 
     @DeleteMapping("/resetDB")
     public void reset() {
-        log.info("UserStorage очищена.");
+        log.info("UserStorage и EventStorage очищены.");
         service.removeAll();
+    }
+
+    @GetMapping("{id}/feed")
+    public List<Event> userFeed(@PathVariable String id) {
+        return service.getEvents(id);
     }
 }

@@ -6,8 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storages.FilmStorage;
 import ru.yandex.practicum.filmorate.storages.LikesStorage;
 
@@ -22,13 +25,15 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final LikesStorage likesStorage;
     private final UserService userService;
+    private final EventService eventService;
     private final DirectorService directorService;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, LikesStorage likesStorage, UserService userService, DirectorService directorService) {
+    public FilmService(FilmStorage filmStorage, LikesStorage likesStorage, UserService userService, EventService eventService, DirectorService directorService) {
         this.filmStorage = filmStorage;
         this.likesStorage = likesStorage;
         this.userService = userService;
+        this.eventService = eventService;
         this.directorService = directorService;
     }
 
@@ -70,6 +75,12 @@ public class FilmService {
         findFilmById(film);
         findUserById(userId);
         likesStorage.add(user, film);
+        eventService.addEvent(Event.builder()
+                .userId(user)
+                .eventType(EventType.LIKE)
+                .operation(Operation.ADD)
+                .entityId(film)
+                .build());
     }
 
     public void removeLike(String userId, String filmId) {
@@ -78,6 +89,12 @@ public class FilmService {
         findFilmById(film);
         findUserById(userId);
         likesStorage.remove(user, film);
+        eventService.addEvent(Event.builder()
+                .userId(user)
+                .eventType(EventType.LIKE)
+                .operation(Operation.REMOVE)
+                .entityId(film)
+                .build());
     }
 
     public List<Film> getFilmsByDirector(String directorId, Optional<String> sortBy) {
