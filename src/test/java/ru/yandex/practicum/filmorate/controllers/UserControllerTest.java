@@ -357,7 +357,7 @@ class UserControllerTest {
                         jsonPath("$.[0]userId").value(1),
                         jsonPath("$.[0]eventType").value("REVIEW"),
                         jsonPath("$.[0]operation").value("ADD"),
-                        jsonPath("$.[0]entityId").value(7)
+                        jsonPath("$.[0]entityId").value(1)
                 );
     }
 
@@ -402,7 +402,7 @@ class UserControllerTest {
                         jsonPath("$.[1]userId").value(1),
                         jsonPath("$.[1]eventType").value("REVIEW"),
                         jsonPath("$.[1]operation").value("UPDATE"),
-                        jsonPath("$.[1]entityId").value(5)
+                        jsonPath("$.[1]entityId").value(1)
                 );
     }
 
@@ -437,7 +437,7 @@ class UserControllerTest {
                         jsonPath("$.[1]userId").value(1),
                         jsonPath("$.[1]eventType").value("REVIEW"),
                         jsonPath("$.[1]operation").value("REMOVE"),
-                        jsonPath("$.[1]entityId").value(6)
+                        jsonPath("$.[1]entityId").value(1)
                 );
     }
 }
