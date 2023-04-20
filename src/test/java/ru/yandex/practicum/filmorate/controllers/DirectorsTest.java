@@ -146,7 +146,7 @@ public class DirectorsTest {
                 "  \"directors\": [{ \"id\": 1}]\n" +
                 "}";
 
-        this.mockMvc.perform(put("/films", 1)
+        this.mockMvc.perform(put("/films")
                 .content(json).contentType("application/json;charset=UTF-8"));
         this.mockMvc.perform(get("/films/director/{id}", 1))
                 .andExpectAll(
