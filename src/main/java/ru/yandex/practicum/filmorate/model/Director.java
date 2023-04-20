@@ -12,6 +12,6 @@ import javax.validation.constraints.NotBlank;
 @ToString
 public class Director {
     private int id;
-    @NotBlank
+    @NotBlank(message = "Имя режиссёра не должно быть пустым.")
     private String name;
 }
