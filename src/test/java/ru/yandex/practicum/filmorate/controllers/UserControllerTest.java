@@ -26,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql(scripts = "file:src/test/resources/data/review/sql/cleanReview.sql")
 @AutoConfigureMockMvc
 @TestPropertySource(
         locations = "classpath:application-integrationtest.properties")
@@ -377,7 +378,7 @@ class UserControllerTest {
                 .andExpect(status().isCreated());
 
         json = "{\n" +
-                "  \"reviewId\": 5,\n" +
+                "  \"reviewId\": 1,\n" +
                 "  \"content\": \"This film is not too bad.\",\n" +
                 "  \"isPositive\": true,\n" +
                 "  \"userId\": 1,\n" +
