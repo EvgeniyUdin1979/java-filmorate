@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql(scripts = "file:src/test/resources/data/review/sql/cleanReview.sql")
 @AutoConfigureMockMvc
 @TestPropertySource(
         locations = "classpath:application-integrationtest.properties")
@@ -377,7 +379,7 @@ class UserControllerTest {
                 .andExpect(status().isCreated());
 
         json = "{\n" +
-                "  \"reviewId\": 5,\n" +
+                "  \"reviewId\": 1,\n" +
                 "  \"content\": \"This film is not too bad.\",\n" +
                 "  \"isPositive\": true,\n" +
                 "  \"userId\": 1,\n" +
@@ -421,7 +423,7 @@ class UserControllerTest {
                         .header("Content-Type", "application/json; charset=utf-8"))
                 .andExpect(status().isCreated());
 
-        this.mockMvc.perform(delete("/reviews/6")
+        this.mockMvc.perform(delete("/reviews/1")
                         .header("Content-Type", "application/json; charset=utf-8"))
                 .andExpect(status().isOk());
 

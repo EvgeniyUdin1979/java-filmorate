@@ -32,7 +32,7 @@ public class ReviewService {
                 .userId(review.getUserId())
                 .eventType(EventType.REVIEW)
                 .operation(Operation.ADD)
-                .entityId(review.getReviewId())
+                .entityId(review.getFilmId())
                 .build());
         log.info(String.format("Отзыв с id(%d) успешно сохранен!", review.getReviewId()));
         return review;
@@ -47,7 +47,7 @@ public class ReviewService {
                 .userId(review.getUserId())
                 .eventType(EventType.REVIEW)
                 .operation(Operation.UPDATE)
-                .entityId(review.getReviewId())
+                .entityId(review.getFilmId())
                 .build());
         log.info(String.format("Отзыв с id(%d) успешно обновлен!", review.getReviewId()));
         return review;
@@ -61,7 +61,7 @@ public class ReviewService {
                 .userId(review.getUserId())
                 .eventType(EventType.REVIEW)
                 .operation(Operation.REMOVE)
-                .entityId(review.getReviewId())
+                .entityId(review.getFilmId())
                 .build());
         String message = String.format("Отзыв с id(%d) успешно удален!", id);
         log.info(message);

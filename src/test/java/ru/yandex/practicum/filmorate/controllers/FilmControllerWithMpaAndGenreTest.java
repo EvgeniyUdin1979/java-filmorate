@@ -25,8 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK/*,
-        classes = Application.class*/)
+        webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @TestPropertySource(
         locations = "classpath:application-integrationtest.properties")
@@ -38,10 +37,10 @@ public class FilmControllerWithMpaAndGenreTest {
 
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .addFilter(((request, response, chain) -> {
-                    response.setCharacterEncoding("UTF-8");
-                    chain.doFilter(request, response);
-                })).build();
-    }
+        response.setCharacterEncoding("UTF-8");
+        chain.doFilter(request, response);
+    })).build();
+}
 
     @BeforeEach
     void setUp() {
