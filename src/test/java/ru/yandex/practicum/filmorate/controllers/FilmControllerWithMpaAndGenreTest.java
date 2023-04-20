@@ -37,10 +37,10 @@ public class FilmControllerWithMpaAndGenreTest {
 
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .addFilter(((request, response, chain) -> {
-                    response.setCharacterEncoding("UTF-8");
-                    chain.doFilter(request, response);
-                })).build();
-    }
+        response.setCharacterEncoding("UTF-8");
+        chain.doFilter(request, response);
+    })).build();
+}
 
     @BeforeEach
     void setUp() {

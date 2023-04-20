@@ -421,7 +421,7 @@ class UserControllerTest {
                         .header("Content-Type", "application/json; charset=utf-8"))
                 .andExpect(status().isCreated());
 
-        this.mockMvc.perform(delete("/reviews/6")
+        this.mockMvc.perform(delete("/reviews/1")
                         .header("Content-Type", "application/json; charset=utf-8"))
                 .andExpect(status().isOk());
 

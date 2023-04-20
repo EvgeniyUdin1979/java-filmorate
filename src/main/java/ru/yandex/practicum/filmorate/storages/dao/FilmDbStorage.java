@@ -133,8 +133,6 @@ public class FilmDbStorage implements FilmStorage {
                 .addValue("LIKE_QUANTITY", film.getLikesQuantity())
                 .addValue("RATING_ID", film.getMpa().getId());
         jdbcTemplate.update(sql, param);
-        jdbcTemplate.update("", Map.of("ID", film.getId()));
-        jdbcTemplate.update("", Map.of("ID", film.getId()));
         addGenres(film.getId(), new ArrayList<>(film.getGenres()));
         addDirectors(film.getId(), new ArrayList<>(film.getDirectors()));
         return findById(film.getId());
