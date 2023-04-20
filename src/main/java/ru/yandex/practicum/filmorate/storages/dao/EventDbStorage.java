@@ -49,4 +49,10 @@ public class EventDbStorage implements EventStorage {
         String sql = "SELECT * FROM EVENTS_FEED WHERE USER_ID = :USER_ID;";
         return jdbcTemplate.query(sql, Map.of("USER_ID", userId), EVENT_ROW_MAPPER);
     }
+
+    @Override
+    public void removeAll() {
+        jdbcTemplate.update("DELETE FROM EVENTS_FEED; ALTER TABLE EVENTS_FEED ALTER COLUMN EVENT_ID RESTART WITH 1",
+                Map.of());
+    }
 }

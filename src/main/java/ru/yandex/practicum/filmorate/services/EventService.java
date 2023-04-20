@@ -26,4 +26,8 @@ public class EventService {
         log.info("Запрос из ленты событий по пользователю с id: {}", userId);
         return eventStorage.findByUserId(userId);
     }
+
+    public void removeAll() {
+        eventStorage.removeAll();
+    }
 }
