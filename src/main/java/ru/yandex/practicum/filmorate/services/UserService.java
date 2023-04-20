@@ -76,6 +76,7 @@ public class UserService {
 
     public void removeAll() {
         users.removeAll();
+        eventService.removeAll();
     }
 
     public List<User> findFriends(String userId) {
