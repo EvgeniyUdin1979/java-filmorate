@@ -95,7 +95,7 @@ public class UserController {
 
     @DeleteMapping("/resetDB")
     public void reset() {
-        log.info("UserStorage очищена.");
+        log.info("UserStorage и EventStorage очищены.");
         service.removeAll();
     }
 
