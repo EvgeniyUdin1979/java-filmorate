@@ -210,6 +210,28 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
+    @Override
+    public List<Film> getCommonFilm(int userId, int friendId) {
+        String sql = "SELECT DISTINCT F.ID AS FILM_ID, F.NAME AS FILM_NAME, " +
+                "F.DESCRIPTION AS FILM_DESCRIPTION, F.RELEASE_DATE AS FILM_RELEASE_DATE, " +
+                "F.DURATION AS FILM_DURATION, F.LIKE_QUANTITY AS FILM_LIKE_QUANTITY, " +
+                "R.ID AS RATING_ID, R.NAME AS RATING_NAME " +
+                "FROM FILM F " +
+                "JOIN RATING R ON R.ID = F.RATING_ID " +
+                "LEFT JOIN LIKES l ON F.ID = l.FILM_ID " +
+                "WHERE F.ID IN (SELECT FILM_ID FROM LIKES WHERE USER_ID = :fid " +
+                "AND FILM_ID IN (SELECT FILM_ID FROM LIKES WHERE USER_ID = :uid)) " +
+                "ORDER BY F.LIKE_QUANTITY DESC";
+
+        SqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("fid", friendId)
+                .addValue("uid", userId);
+        List<Film> films = jdbcTemplate.query(sql, parameters, FILM_ROW_MAPPER);
+
+        addGenresAndDirectorsInFilms(films);
+        return films;
+    }
+
 
     private void addDirectors(int id, List<Director> directors) {
         if (directors.size() > 0) {

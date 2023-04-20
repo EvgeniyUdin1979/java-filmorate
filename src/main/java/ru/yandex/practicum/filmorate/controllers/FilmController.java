@@ -113,4 +113,11 @@ public class FilmController {
         log.info("Поиск самых популярных фильмов по запросу {}.", query);
         return service.getFilmBySearch(query, by);
     }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilm(@RequestParam("userId") @NotNull String userId,
+                                    @RequestParam("friendId") @NotNull String friendId) {
+        log.info("Получены общие фильмы у пользователей {} и {}.", userId, friendId);
+        return service.getCommonFilm(userId, friendId);
+    }
 }
