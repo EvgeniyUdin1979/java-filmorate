@@ -26,9 +26,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Sql(scripts = "file:src/test/resources/data/review/sql/cleanReview.sql")
 @AutoConfigureMockMvc
+@Sql(scripts = "file:src/test/resources/data/review/sql/cleanReview.sql")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(
         locations = "classpath:application-integrationtest.properties")
 class UserControllerTest {
@@ -58,7 +58,7 @@ class UserControllerTest {
                 .build();
         switch (urlRequest) {
             case "/films":
-                List<Film> films = mapper.readValue(string, new TypeReference<List<Film>>() {
+                List<Film> films = mapper.readValue(string, new TypeReference<>() {
                 });
                 for (Film film : films) {
                     this.mockMvc.perform(post(urlRequest)
@@ -67,7 +67,7 @@ class UserControllerTest {
                 }
                 break;
             case "/users":
-                List<User> users = mapper.readValue(string, new TypeReference<List<User>>() {
+                List<User> users = mapper.readValue(string, new TypeReference<>() {
                 });
                 for (User user : users) {
                     this.mockMvc.perform(post(urlRequest)

@@ -23,7 +23,7 @@ public class GenreService {
     public Genre findById(int id) {
         Genre genre = storage.findById(id);
         if (genre == null) {
-            throw new FilmRequestException("Жанра с id " + id + "не существует!", HttpStatus.NOT_FOUND);
+            throw new FilmRequestException("Жанра с id " + id + " не существует!", HttpStatus.NOT_FOUND);
         }
         return genre;
     }

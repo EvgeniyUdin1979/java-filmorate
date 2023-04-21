@@ -33,7 +33,8 @@ public class FilmRowMapper implements RowMapper<Film> {
     }
 
     private Set<Integer> parseLikes(ResultSet rs) throws SQLException {
-        return rs.getString("likes") == null ?
+        String str = rs.getString("likes");
+        return  str == null || str.matches("[,@]+") ?
                 new HashSet<>()
                 : Arrays.stream(rs.getString("likes").split(","))
                 .map(Integer::parseInt)
@@ -42,7 +43,7 @@ public class FilmRowMapper implements RowMapper<Film> {
 
     private Set<Director> parseDirectors(ResultSet rs) throws SQLException {
         String str = rs.getString("directors");
-        return  str == null || str.length() < 4 ?
+        return  str == null || str.matches("[,@]+") ?
                 new HashSet<>()
                 : Arrays.stream(rs.getString("directors").split(","))
                 .map(director -> {
@@ -55,7 +56,7 @@ public class FilmRowMapper implements RowMapper<Film> {
 
     private Set<Genre> parseGenres(ResultSet rs) throws SQLException {
         String str = rs.getString("genres");
-        return  str == null || str.length() < 4 ?
+        return  str == null || str.matches("[,@]+") ?
                 new HashSet<>()
                 : Arrays.stream(rs.getString("genres").split(","))
                 .map(genre -> {

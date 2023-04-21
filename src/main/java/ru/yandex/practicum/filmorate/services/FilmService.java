@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.services;
 
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
@@ -19,6 +19,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FilmService {
 
 
@@ -27,15 +28,7 @@ public class FilmService {
     private final UserService userService;
     private final EventService eventService;
     private final DirectorService directorService;
-
-    @Autowired
-    public FilmService(FilmStorage filmStorage, LikesStorage likesStorage, UserService userService, EventService eventService, DirectorService directorService) {
-        this.filmStorage = filmStorage;
-        this.likesStorage = likesStorage;
-        this.userService = userService;
-        this.eventService = eventService;
-        this.directorService = directorService;
-    }
+    private final GenreService genreService;
 
     public List<Film> findAll() {
         return filmStorage.findAll();
@@ -140,9 +133,11 @@ public class FilmService {
     public List<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
         validateRequestParam(count, "count");
         validateRequestParam(genreId, "genreId");
+        if (genreId != null) genreService.findById(genreId);
         validateRequestParam(year, "year");
+        List<Film> films = filmStorage.getMostPopular(count, genreId, year);
         log.info("Получены популярные фильмы.");
-        return filmStorage.getMostPopular(count, genreId, year);
+        return films;
     }
 
     private void validateRequestParam(Integer param, String name) {

@@ -20,6 +20,8 @@ import ru.yandex.practicum.filmorate.storages.FilmStorage;
 import ru.yandex.practicum.filmorate.storages.dao.mappers.FilmRowMapper;
 
 import javax.sql.DataSource;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 @Slf4j
@@ -267,7 +269,6 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDirectors().addAll(directorMap.get(film.getId()));
             }
         }
-        return films;
     }
 
     @Override
@@ -288,7 +289,7 @@ public class FilmDbStorage implements FilmStorage {
                 "%s" +
                 "GROUP BY f.id " +
                 "%s" +
-                "ORDER BY film_like_quantity DESC " +
+                "ORDER BY film_like_quantity DESC, f.id " +
                 "LIMIT :COUNT;";
         if (genreId != null && year != null) {
             validateGenreId(genreId);

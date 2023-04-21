@@ -4,13 +4,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvFileSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -28,23 +30,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@Sql(scripts = "file:src/test/resources/data/film/sql/cleanFilm&UserTables.sql")
 @TestPropertySource(
         locations = "classpath:application-integrationtest.properties")
 class FilmControllerTest {
     @Autowired
     private MockMvc mockMvc;
-
-    @BeforeEach
-    void setUp() {
-        try {
-            this.mockMvc.perform(delete("/films/resetDB"));
-            this.mockMvc.perform(delete("/users/resetDB"));
-//            upData("src/test/resources/files/filmslist.txt", "/films");
-//            upData("src/test/resources/files/userslist.txt", "/users");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private void upData(String urlData, String urlRequest) throws Exception {
         String string = Files.readString(Path.of(urlData));
@@ -53,7 +44,7 @@ class FilmControllerTest {
                 .build();
         switch (urlRequest) {
             case "/films":
-                List<Film> films = mapper.readValue(string, new TypeReference<List<Film>>() {
+                List<Film> films = mapper.readValue(string, new TypeReference<>() {
                 });
                 for (Film film : films) {
                     this.mockMvc.perform(post(urlRequest)
@@ -62,7 +53,7 @@ class FilmControllerTest {
                 }
                 break;
             case "/users":
-                List<User> users = mapper.readValue(string, new TypeReference<List<User>>() {
+                List<User> users = mapper.readValue(string, new TypeReference<>() {
                 });
                 for (User user : users) {
                     this.mockMvc.perform(post(urlRequest)
@@ -305,6 +296,19 @@ class FilmControllerTest {
                         content().contentType("application/json; charset=utf-8"),
                         jsonPath("$.length()").value(10)
                 );
+    }
+
+    @ParameterizedTest
+    @CsvFileSource(resources = "/data/film/getMostPopularFilms.csv", delimiter = '|')
+    public void getMostPopular(String param, Integer status, String expectedResponse) throws Exception {
+        upData("src/test/resources/files/filmslist.txt", "/films");
+        upData("src/test/resources/files/userslist.txt", "/users");
+        mockMvc.perform(get("/films/popular" + param)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is(status))
+                .andExpect(MockMvcResultMatchers.content().string(expectedResponse));
+
     }
 
     @Test

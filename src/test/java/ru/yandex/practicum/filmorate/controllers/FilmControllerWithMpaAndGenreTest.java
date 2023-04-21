@@ -59,7 +59,7 @@ public class FilmControllerWithMpaAndGenreTest {
                 .build();
         switch (urlRequest) {
             case "/films":
-                List<Film> films = mapper.readValue(string, new TypeReference<List<Film>>() {
+                List<Film> films = mapper.readValue(string, new TypeReference<>() {
                 });
                 for (Film film : films) {
                     this.mockMvc.perform(post(urlRequest)
@@ -69,7 +69,7 @@ public class FilmControllerWithMpaAndGenreTest {
                 }
                 break;
             case "/users":
-                List<User> users = mapper.readValue(string, new TypeReference<List<User>>() {
+                List<User> users = mapper.readValue(string, new TypeReference<>() {
                 });
                 for (User user : users) {
                     this.mockMvc.perform(post(urlRequest)
@@ -132,7 +132,7 @@ public class FilmControllerWithMpaAndGenreTest {
                 .andExpectAll(
                         status().isNotFound(),
                         content().contentType("application/json;charset=UTF-8"),
-                        jsonPath("$.message").value("Жанра с id 99не существует!")
+                        jsonPath("$.message").value("Жанра с id 99 не существует!")
                 );
     }
 
