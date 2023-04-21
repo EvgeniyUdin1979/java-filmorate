@@ -133,6 +133,10 @@ public class FilmService {
         return user;
     }
 
+    public List<Film> getFilmBySearch(String query, String by) {
+        return filmStorage.getFilmBySearch(query, by);
+    }
+
     public List<Film> getMostPopular(Integer count, Integer genreId, Integer year) {
         validateRequestParam(count, "count");
         validateRequestParam(genreId, "genreId");

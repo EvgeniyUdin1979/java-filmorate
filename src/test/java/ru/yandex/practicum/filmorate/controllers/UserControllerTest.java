@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql(scripts = "file:src/test/resources/data/review/sql/cleanReview.sql")
 @AutoConfigureMockMvc
 @TestPropertySource(
         locations = "classpath:application-integrationtest.properties")
@@ -355,7 +357,7 @@ class UserControllerTest {
                         jsonPath("$.[0]userId").value(1),
                         jsonPath("$.[0]eventType").value("REVIEW"),
                         jsonPath("$.[0]operation").value("ADD"),
-                        jsonPath("$.[0]entityId").value(7)
+                        jsonPath("$.[0]entityId").value(1)
                 );
     }
 
@@ -377,7 +379,7 @@ class UserControllerTest {
                 .andExpect(status().isCreated());
 
         json = "{\n" +
-                "  \"reviewId\": 5,\n" +
+                "  \"reviewId\": 1,\n" +
                 "  \"content\": \"This film is not too bad.\",\n" +
                 "  \"isPositive\": true,\n" +
                 "  \"userId\": 1,\n" +
@@ -400,7 +402,7 @@ class UserControllerTest {
                         jsonPath("$.[1]userId").value(1),
                         jsonPath("$.[1]eventType").value("REVIEW"),
                         jsonPath("$.[1]operation").value("UPDATE"),
-                        jsonPath("$.[1]entityId").value(5)
+                        jsonPath("$.[1]entityId").value(1)
                 );
     }
 
@@ -421,7 +423,7 @@ class UserControllerTest {
                         .header("Content-Type", "application/json; charset=utf-8"))
                 .andExpect(status().isCreated());
 
-        this.mockMvc.perform(delete("/reviews/6")
+        this.mockMvc.perform(delete("/reviews/1")
                         .header("Content-Type", "application/json; charset=utf-8"))
                 .andExpect(status().isOk());
 
@@ -435,7 +437,7 @@ class UserControllerTest {
                         jsonPath("$.[1]userId").value(1),
                         jsonPath("$.[1]eventType").value("REVIEW"),
                         jsonPath("$.[1]operation").value("REMOVE"),
-                        jsonPath("$.[1]entityId").value(6)
+                        jsonPath("$.[1]entityId").value(1)
                 );
     }
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.services.FilmService;
 
@@ -86,4 +87,11 @@ public class FilmController {
         return ResponseEntity.ok().body(service.getMostPopular(count, genreId, year));
     }
 
+
+    @GetMapping("/search")
+    public List<Film> getFilmBySearch(@RequestParam("query") @NotNull String query,
+                                       @RequestParam("by") @NotNull String by) {
+        log.info("Поиск самых популярных фильмов по запросу {}.", query);
+        return service.getFilmBySearch(query, by);
+    }
 }

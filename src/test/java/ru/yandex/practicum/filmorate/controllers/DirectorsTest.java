@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -25,28 +25,30 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+        webEnvironment = SpringBootTest.WebEnvironment.MOCK/*,
+        classes = Application.class*/)
 @AutoConfigureMockMvc
 @TestPropertySource(
         locations = "classpath:application-integrationtest.properties")
-public class FilmControllerWithMpaAndGenreTest {
+public class DirectorsTest {
     private final MockMvc mockMvc;
 
     @Autowired
-    FilmControllerWithMpaAndGenreTest(WebApplicationContext wac) {
+    DirectorsTest(WebApplicationContext wac) {
 
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .addFilter(((request, response, chain) -> {
-        response.setCharacterEncoding("UTF-8");
-        chain.doFilter(request, response);
-    })).build();
-}
+                    response.setCharacterEncoding("UTF-8");
+                    chain.doFilter(request, response);
+                })).build();
+    }
 
     @BeforeEach
     void setUp() {
         try {
             this.mockMvc.perform(delete("/films/resetDB"));
             this.mockMvc.perform(delete("/users/resetDB"));
+            this.mockMvc.perform(delete("/directors/resetDB"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -76,83 +78,61 @@ public class FilmControllerWithMpaAndGenreTest {
                             .content(mapper.writeValueAsString(user))
                             .contentType("application/json;charset=UTF-8"));
                 }
+            case "/directors":
+                List<Director> directors = mapper.readValue(string, new TypeReference<List<Director>>() {
+                });
+                for (Director director : directors) {
+                    this.mockMvc.perform(post(urlRequest)
+                            .content(mapper.writeValueAsString(director))
+                            .contentType("application/json;charset=UTF-8"));
+                }
         }
     }
 
     @Test
-    void getMpaId1() throws Exception {
-        this.mockMvc.perform(get("/mpa/{id}", 1))
+    void getDirectorId1() throws Exception {
+        upData("src/test/resources/files/directorslist.txt", "/directors");
+        this.mockMvc.perform(get("/directors/{id}", 1))
                 .andExpectAll(
                         status().isOk(),
                         content().contentType("application/json;charset=UTF-8"),
                         jsonPath("$.id").value(1),
-                        jsonPath("$.name").value("G")
+                        jsonPath("$.name").value("Типо режиссёр 1")
                 );
     }
 
     @Test
-    void getMpaId99() throws Exception {
-        this.mockMvc.perform(get("/mpa/{id}", 99))
+    void getDirectorId99() throws Exception {
+        upData("src/test/resources/files/directorslist.txt", "/directors");
+        this.mockMvc.perform(get("/directors/{id}", 99))
                 .andExpectAll(
                         status().isNotFound(),
                         content().contentType("application/json;charset=UTF-8"),
-                        jsonPath("$.message").value("Рейтинга с данным id 99  не существует!")
+                        jsonPath("$.message").value("Режиссёра с данным id 99 не существует!")
                 );
     }
 
     @Test
-    void getAllMpa() throws Exception {
-        this.mockMvc.perform(get("/mpa"))
+    void getAllDirectors() throws Exception {
+        upData("src/test/resources/files/directorslist.txt", "/directors");
+        this.mockMvc.perform(get("/directors"))
                 .andExpectAll(
                         status().isOk(),
                         content().contentType("application/json;charset=UTF-8"),
-                        jsonPath("$.length()").value(5),
+                        jsonPath("$.length()").value(3),
                         jsonPath("$[0].id").value(1),
-                        jsonPath("$[0].name").value("G"),
-                        jsonPath("$[4].id").value(5),
-                        jsonPath("$[4].name").value("NC-17")
+                        jsonPath("$[0].name").value("Типо режиссёр 1"),
+                        jsonPath("$[1].id").value(2),
+                        jsonPath("$[1].name").value("Типо режиссёр 2"),
+                        jsonPath("$[2].id").value(3),
+                        jsonPath("$[2].name").value("Типо режиссёр 3")
 
                 );
     }
 
     @Test
-    void getGenreId1() throws Exception {
-        this.mockMvc.perform(get("/genres/{id}", 1))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType("application/json;charset=UTF-8"),
-                        jsonPath("$.id").value(1),
-                        jsonPath("$.name").value("Комедия")
-                );
-    }
-
-    @Test
-    void getGenreId99() throws Exception {
-        this.mockMvc.perform(get("/genres/{id}", 99))
-                .andExpectAll(
-                        status().isNotFound(),
-                        content().contentType("application/json;charset=UTF-8"),
-                        jsonPath("$.message").value("Жанра с id 99не существует!")
-                );
-    }
-
-    @Test
-    void getAllGenre() throws Exception {
-        this.mockMvc.perform(get("/genres"))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType("application/json;charset=UTF-8"),
-                        jsonPath("$.length()").value(6),
-                        jsonPath("$[0].id").value(1),
-                        jsonPath("$[0].name").value("Комедия"),
-                        jsonPath("$[5].id").value(6),
-                        jsonPath("$[5].name").value("Боевик")
-
-                );
-    }
-
-    @Test
-    void filmID1UpdateGenre() throws Exception {
+    void filmID1UpdateDirectorAndGetHisFilms() throws Exception {
+        upData("src/test/resources/files/directorslist.txt", "/directors");
         upData("src/test/resources/files/filmslist.txt", "/films");
         String json = "{\n" +
                 "  \"id\": 1,\n" +
@@ -161,49 +141,22 @@ public class FilmControllerWithMpaAndGenreTest {
                 "  \"description\": \"New film update decription\",\n" +
                 "  \"duration\": 190,\n" +
                 "  \"rate\": 4,\n" +
-                "  \"mpa\": { \"id\": 5},\n" +
-                "  \"genres\": [{ \"id\": 2}]\n" +
-                "}";
-
-        this.mockMvc.perform(put("/films", 1)
-                .content(json).contentType("application/json;charset=UTF-8"));
-        this.mockMvc.perform(get("/films/{id}", 1))
-                .andExpectAll(
-                        status().isOk(),
-                        content().contentType("application/json;charset=UTF-8"),
-                        jsonPath("$.id").value(1),
-                        jsonPath("$.name").value("Film Updated"),
-                        jsonPath("$.mpa.id").value(5),
-                        jsonPath("$.genres[0].id").value(2)
-                );
-    }
-
-    @Test
-    void filmID1UpdateGenreWithDuplicate() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
-        String json = "{\n" +
-                "  \"id\": 1,\n" +
-                "  \"name\": \"New film\",\n" +
-                "  \"releaseDate\": \"1999-04-30\",\n" +
-                "  \"description\": \"New film about friends\",\n" +
-                "  \"duration\": 120,\n" +
                 "  \"mpa\": { \"id\": 3},\n" +
-                "  \"genres\": [{ \"id\": 1}, { \"id\": 2}, { \"id\": 1}]\n" +
+                "  \"genres\": [{ \"id\": 2}],\n" +
+                "  \"directors\": [{ \"id\": 1}]\n" +
                 "}";
 
-        this.mockMvc.perform(put("/films", 1)
-                .content(json).contentType(MediaType.APPLICATION_JSON));
-        this.mockMvc.perform(get("/films/{id}", 1))
+        this.mockMvc.perform(put("/films")
+                .content(json).contentType("application/json;charset=UTF-8"));
+        this.mockMvc.perform(get("/films/director/{id}", 1))
                 .andExpectAll(
                         status().isOk(),
                         content().contentType("application/json;charset=UTF-8"),
-                        jsonPath("$.id").value(1),
-                        jsonPath("$.name").value("New film"),
-                        jsonPath("$.mpa.id").value(3),
-                        jsonPath("$.genres[0].id").value(1),
-                        jsonPath("$.genres[1].id").value(2)
+                        jsonPath("[0].id").value(1),
+                        jsonPath("[0].name").value("Film Updated"),
+                        jsonPath("[0].mpa.id").value(3),
+                        jsonPath("[0].genres[0].id").value(2),
+                        jsonPath("[0].directors[0].id").value(1)
                 );
     }
-
-
 }

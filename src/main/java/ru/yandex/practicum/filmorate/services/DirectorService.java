@@ -26,7 +26,7 @@ public class DirectorService {
         Director director = storage.findById(id);
         if (director == null) {
             // Я думаю можно оставить FilmRequestException, не создавая новую ошибку.
-            throw new FilmRequestException("Режиссёра с данным id " + id + "  не существует!", HttpStatus.NOT_FOUND);
+            throw new FilmRequestException("Режиссёра с данным id " + id + " не существует!", HttpStatus.NOT_FOUND);
         }
         return director;
     }
