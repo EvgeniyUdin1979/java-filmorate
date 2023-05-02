@@ -1,24 +1,16 @@
 package ru.yandex.practicum.filmorate.controllers;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -26,53 +18,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@Sql(scripts = "file:src/test/resources/files/maindata.sql")
 @TestPropertySource(
         locations = "classpath:application-integrationtest.properties")
 class FilmControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @BeforeEach
+    @AfterEach
     void setUp() {
         try {
             this.mockMvc.perform(delete("/films/resetDB"));
             this.mockMvc.perform(delete("/users/resetDB"));
-//            upData("src/test/resources/files/filmslist.txt", "/films");
-//            upData("src/test/resources/files/userslist.txt", "/users");
+            this.mockMvc.perform(delete("/directors/resetDB"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void upData(String urlData, String urlRequest) throws Exception {
-        String string = Files.readString(Path.of(urlData));
-        ObjectMapper mapper = JsonMapper.builder()
-                .addModules(new JavaTimeModule())
-                .build();
-        switch (urlRequest) {
-            case "/films":
-                List<Film> films = mapper.readValue(string, new TypeReference<List<Film>>() {
-                });
-                for (Film film : films) {
-                    this.mockMvc.perform(post(urlRequest)
-                            .content(mapper.writeValueAsString(film))
-                            .contentType(MediaType.APPLICATION_JSON));
-                }
-                break;
-            case "/users":
-                List<User> users = mapper.readValue(string, new TypeReference<List<User>>() {
-                });
-                for (User user : users) {
-                    this.mockMvc.perform(post(urlRequest)
-                            .content(mapper.writeValueAsString(user))
-                            .contentType(MediaType.APPLICATION_JSON));
-                }
-        }
-    }
-
     @Test
     void getAllFilms() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
         this.mockMvc.perform(get("/films")
                         .contentType("application/json;charset=UTF-8")).andDo(print())
                 .andExpectAll(
@@ -80,13 +45,12 @@ class FilmControllerTest {
                         content().contentType("application/json;charset=UTF-8"),
                         MockMvcResultMatchers.jsonPath("$.length()").value(10),
                         MockMvcResultMatchers.jsonPath("$[0].id").value(1),
-                        MockMvcResultMatchers.jsonPath("$[9].id").value(10)
+                        MockMvcResultMatchers.jsonPath("$[2].id").value(3)
                 );
     }
 
     @Test
     void getByIdFilm() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
         this.mockMvc.perform(get("/films/1")).andDo(print())
                 .andExpectAll(
                         status().isOk(),
@@ -174,7 +138,6 @@ class FilmControllerTest {
 
     @Test
     void updateFilm() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
         String json = "{\"id\":1,\"name\":\"test\",\"description\":\"Description\",\"releaseDate\":\"1900-03-25\",\"duration\":200,\n" +
                 "    \"mpa\": { \"id\": 3},\n" +
                 "    \"genres\": [{ \"id\": 1}, { \"id\": 2}, { \"id\": 3}]}\"";
@@ -193,7 +156,6 @@ class FilmControllerTest {
 
     @Test
     void updateUnknownFilm() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
         String json = "{\"id\":9999,\"name\":\"test\",\"description\":\"Description\",\"releaseDate\":\"1900-03-25\",\"duration\":200}\"));";
         this.mockMvc.perform(put("/films")
                         .content(json).header("Content-Type", "application/json")).andDo(print())
@@ -202,8 +164,6 @@ class FilmControllerTest {
 
     @Test
     void addLikeAndGetFilm() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
-        upData("src/test/resources/files/userslist.txt", "/users");
         this.mockMvc.perform(put("/films/2/like/1")
                         .header("Content-Type", "application/json; charset=utf-8"))
                 .andExpect(status().isOk());
@@ -223,8 +183,6 @@ class FilmControllerTest {
 
     @Test
     void removeLikeAndGetFilmWithCount5() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
-        upData("src/test/resources/files/userslist.txt", "/users");
         this.mockMvc.perform(put("/films/2/like/1")
                         .header("Content-Type", "application/json; charset=utf-8"))
                 .andDo(print())
@@ -249,8 +207,47 @@ class FilmControllerTest {
     }
 
     @Test
+    void addLikeAndCheckFeed() throws Exception {
+        this.mockMvc.perform(put("/films/2/like/1")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get("/users/1/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType("application/json; charset=utf-8"),
+                        jsonPath("$.length()").value(1),
+                        jsonPath("$.[0]userId").value(1),
+                        jsonPath("$.[0]eventType").value("LIKE"),
+                        jsonPath("$.[0]operation").value("ADD"),
+                        jsonPath("$.[0]entityId").value(2)
+                );
+    }
+
+    @Test
+    void removeLikeAndCheckFeed() throws Exception {
+        this.mockMvc.perform(delete("/films/2/like/1")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(get("/users/1/feed")
+                        .header("Content-Type", "application/json; charset=utf-8"))
+                .andDo(print())
+                .andExpectAll(
+                        status().isOk(),
+                        content().contentType("application/json; charset=utf-8"),
+                        jsonPath("$.length()").value(1),
+                        jsonPath("$.[0]userId").value(1),
+                        jsonPath("$.[0]eventType").value("LIKE"),
+                        jsonPath("$.[0]operation").value("REMOVE"),
+                        jsonPath("$.[0]entityId").value(2)
+                );
+    }
+
+    @Test
     void getPopularFilmsWithoutCount() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
         this.mockMvc.perform(get("/films/popular")
                         .header("Content-Type", "application/json; charset=utf-8"))
                 .andDo(print())
@@ -261,4 +258,12 @@ class FilmControllerTest {
                 );
     }
 
+    @Test
+    public void deleteFilm() throws Exception {
+        MockHttpServletRequestBuilder builder = MockMvcRequestBuilders.delete("/films/1")
+                .header("Content-Type", "application/json");
+        this.mockMvc.perform(builder)
+                .andExpect(status().isOk());
+        this.mockMvc.perform(get("/films/1")).andDo(print()).andExpect(status().isNotFound());
+    }
 }

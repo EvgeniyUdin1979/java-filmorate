@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.services.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,7 +32,7 @@ public class FilmController {
     }
 
     @GetMapping(value = "/{id}")
-    public Film getFilmById(@PathVariable("id") String id) {
+    public Film getFilmById(@PathVariable("id") int id) {
         Film film = service.findById(id);
         log.info(String.format("Получены данные по фильмy id: %s.", id));
         return film;
@@ -51,40 +52,48 @@ public class FilmController {
         return filmUpdate;
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteFilm(@PathVariable("id") int id) {
+        service.deleteById(id);
+        log.info("Удален фильм id {}", id);
+    }
+
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable("id") String id,
-                        @PathVariable("userId") String userId) {
+    public void addLike(@PathVariable("id") int id,
+                        @PathVariable("userId") int userId) {
         service.addLike(userId, id);
         log.info("Добавлен лайк фильму {} от пользователя {}", id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable("id") String id,
-                           @PathVariable("userId") String userId) {
+    public void removeLike(@PathVariable("id") int id,
+                           @PathVariable("userId") int userId) {
         service.removeLike(userId, id);
         log.info("Удален лайк фильму {} от пользователя {}", id, userId);
     }
 
     @GetMapping("/popular")
-    public List<Film> popularFilms(@RequestParam Optional<String> count) {
+    public List<Film> popularFilms(@RequestParam Optional<Integer> count) {
         if (count.isPresent()) {
             try {
-                int c = Integer.parseInt(count.get());
+                int c = count.get();
                 if (c < 1) {
                     String messageError = "Параметр count должен быть больше 0 или отсутствовать!";
-                    log.info(messageError, HttpStatus.BAD_REQUEST);
+                    log.info(messageError);
                     throw new UserRequestException(messageError, HttpStatus.BAD_REQUEST);
                 }
+                List<Film> mostPopularFilms = service.mostPopularFilm(c);
                 log.info("Получены популярные фильмы, колличество {}.", c);
-                return service.mostPopularFilm(c);
+                return mostPopularFilms;
             } catch (NumberFormatException e) {
                 String messageError = "Параметр count не является натуральным числом! " + e.getMessage();
                 log.info(messageError);
                 throw new UserRequestException(messageError, HttpStatus.BAD_REQUEST);
             }
         } else {
+            List<Film> mostPopularFilms = service.mostPopularFilm();
             log.info("Получены популярные фильмы.");
-            return service.mostPopularFilm();
+            return mostPopularFilms;
         }
     }
 
@@ -94,4 +103,20 @@ public class FilmController {
         service.removeAll();
     }
 
+    @GetMapping("/director/{directorId}")
+    public List<Film> getByDirector(@PathVariable("directorId") int directorId,
+                                    @RequestParam Optional<String> sortBy) {
+        return service.getFilmsByDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/search")
+    public List<Film> getFilmBySearch(@RequestParam("query")
+                                      @NotBlank(message = "Текст для поиска не может отсутствовать или быть пустым")
+                                      String query,
+                                      @RequestParam("by")
+                                      @NotBlank(message = "Текст для сортировки не может отсутствовать или быть пустым")
+                                      String by) {
+        log.info("Поиск самых популярных фильмов по запросу {}.", query);
+        return service.getFilmBySearch(query, by);
+    }
 }

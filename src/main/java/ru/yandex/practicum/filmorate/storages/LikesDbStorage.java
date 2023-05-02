@@ -1,9 +1,11 @@
-package ru.yandex.practicum.filmorate.storages.dao;
+package ru.yandex.practicum.filmorate.storages;
 
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.storages.LikesStorage;
+import ru.yandex.practicum.filmorate.storages.dao.LikesStorage;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 @Repository
@@ -30,5 +32,20 @@ public class LikesDbStorage implements LikesStorage {
                 "(SELECT COUNT (USER_ID) AS QUANTITY FROM LIKES WHERE FILM_ID = :FILM_ID GROUP BY FILM_ID)\n" +
                 "WHERE ID = :FILM_ID;";
         jdbcTemplate.update(sql, Map.of("FILM_ID", filmId, "USER_ID", userId));
+    }
+
+    @Override
+    public Map<Integer, HashSet<Integer>> allLikes() {
+        String sql = "SELECT * FROM LIKES;";
+        Map<Integer, HashSet<Integer>> likes = new HashMap<>();
+        jdbcTemplate.query(sql, rs -> {
+            int userId = rs.getInt("USER_ID");
+            int filmId = rs.getInt("FILM_ID");
+            if (!likes.containsKey(userId)) {
+                likes.put(userId, new HashSet<>());
+            }
+            likes.get(userId).add(filmId);
+        });
+        return likes;
     }
 }

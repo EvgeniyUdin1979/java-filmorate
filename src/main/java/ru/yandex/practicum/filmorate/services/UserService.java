@@ -1,115 +1,161 @@
 package ru.yandex.practicum.filmorate.services;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storages.FriendsStorage;
-import ru.yandex.practicum.filmorate.storages.UserStorage;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.storages.dao.FilmStorage;
+import ru.yandex.practicum.filmorate.storages.dao.FriendsStorage;
+import ru.yandex.practicum.filmorate.storages.dao.LikesStorage;
+import ru.yandex.practicum.filmorate.storages.dao.UserStorage;
 
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class UserService {
-    private final UserStorage users;
+    private final UserStorage userStorage;
     private final FriendsStorage friends;
+    private final EventService eventService;
+    private final FilmStorage films;
+    private final LikesStorage likesStorage;
 
-    @Autowired
-    public UserService(@Qualifier("userDAO") UserStorage users, FriendsStorage friends) {
-        this.users = users;
-        this.friends = friends;
-    }
+
 
     public List<User> findAll() {
-        return users.findAll();
+        return userStorage.findAll();
     }
 
     public User createUser(User user) {
         if (user.getId() != 0) {
-            String message = "Для добавления пользователя не нужно указывать id!";
-            log.info(message + " " + user);
+            String message = String.format("Для добавления пользователя не нужно указывать id! %s", user);
+            log.info(message);
             throw new UserRequestException(message);
         }
         if (user.getName() == null || user.getName().isEmpty() || user.getName().isBlank()) {
             log.info("User не имеет имени! Будет использован login {}", user);
             user.setName(user.getLogin());
         }
-        return users.create(user);
+        return userStorage.create(user);
     }
 
-    public User findById(String id) {
-        return findUserById(validateAndParseInt(id));
+    public User findById(int id) {
+        findUserById(id);
+        return userStorage.findById(id);
     }
 
     public User updateUser(User user) {
         if (user.getId() == 0) {
             String message = "Для обновления пользователя id нужно указать больше чем 0!";
-            log.info(message, user);
+            log.info(message);
             throw new UserRequestException(message);
         }
         findUserById(user.getId());
-        return users.update(user);
+        return userStorage.update(user);
+    }
+
+    public void deleteById(int id) {
+        findUserById(id);
+        userStorage.removeById(id);
     }
 
     public void removeAll() {
-        users.removeAll();
+        userStorage.removeAll();
+        eventService.removeAll();
     }
 
-    public List<User> findFriends(String userId) {
-        int user = validateAndParseInt(userId);
-        findUserById(user);
-        return friends.findAllById(user)
-                .stream().map(users::findById).collect(Collectors.toList());
+    public List<User> findFriends(int id) {
+        findUserById(id);
+        return friends.findAllById(id)
+                .stream().map(userStorage::findById).collect(Collectors.toList());
     }
 
-    public List<User> findCommonFriends(String userId, String forSearchId) {
-        int user = validateAndParseInt(userId);
-        int friend = validateAndParseInt(forSearchId);
-        findUserById(user);
-        findUserById(friend);
-        return friends.common(user, friend);
+    public List<User> findCommonFriends(int userId, int friendId) {
+        findUserById(userId);
+        findUserById(friendId);
+        return friends.common(userId, friendId);
     }
 
-    public void addFriend(String userId, String friendId) {
-        int user = validateAndParseInt(userId);
-        int friend = validateAndParseInt(friendId);
-        findUserById(user);
-        findUserById(friend);
-        friends.add(user, friend);
+    public void addFriend(int userId, int friendId) {
+        findUserById(userId);
+        findUserById(friendId);
+        friends.add(userId, friendId);
+        eventService.addEvent(Event.builder()
+                .userId(userId)
+                .eventType(EventType.FRIEND)
+                .operation(Operation.ADD)
+                .entityId(friendId)
+                .build());
     }
 
-    public void removeFriend(String userId, String friendId) {
-        int user = validateAndParseInt(userId);
-        int friend = validateAndParseInt(friendId);
-        findUserById(user);
-        findUserById(friend);
-        friends.remove(user, friend);
+    public void removeFriend(int userId, int friendId) {
+        findUserById(userId);
+        findUserById(friendId);
+        friends.remove(userId, friendId);
+        eventService.addEvent(Event.builder()
+                .userId(userId)
+                .eventType(EventType.FRIEND)
+                .operation(Operation.REMOVE)
+                .entityId(friendId)
+                .build());
     }
 
-    private int validateAndParseInt(String id) {
-        try {
-            return Integer.parseInt(id);
-        } catch (NumberFormatException e) {
-            String message = String.format("Данный id: %s, не целое число!", id);
-            log.info(message);
-            throw new UserRequestException(message, HttpStatus.BAD_REQUEST);
-        }
+    public List<Event> getEvents(int id) {
+        findUserById(id);
+        return eventService.findByUserId(id);
     }
 
-    private User findUserById(int id) {
-        User user = users.findById(id);
-        if (user == null) {
+    public List<Film> recommend(int id) {
+        findUserById(id);
+        return getRecommendations(likesStorage.allLikes(), id).stream().map(films::findById).collect(Collectors.toList());
+    }
+
+    public void findUserById(int id) {
+        if (!userStorage.isExists(id)) {
             String message = String.format("Пользователь с данным id: %d, не найден", id);
             log.info(message);
             throw new UserRequestException(message, HttpStatus.NOT_FOUND);
         }
-        return user;
     }
 
+
+    private List<Integer> getRecommendations(Map<Integer, HashSet<Integer>> allLikes, int userId) {
+        if (allLikes.get(userId) == null) {
+            return new ArrayList<>();
+        }
+        HashMap<Integer, Integer> usersCount = new HashMap<>();
+        allLikes.get(userId).forEach(filmId -> {
+            for (Map.Entry<Integer, HashSet<Integer>> user : allLikes.entrySet()) {
+                int anotherUserId = user.getKey();
+                if (anotherUserId == userId) {
+                    continue;
+                }
+                if (user.getValue().contains(filmId)) {
+                    if (!usersCount.containsKey(anotherUserId)) {
+                        usersCount.put(anotherUserId, 0);
+                    }
+                    int oldValue = usersCount.get(anotherUserId);
+                    usersCount.put(anotherUserId, ++oldValue);
+                }
+            }
+        });
+        Optional<Map.Entry<Integer, Integer>> max = usersCount.entrySet().stream().max(Map.Entry.comparingByValue());
+        if (max.isEmpty()) {
+            return new ArrayList<>();
+        }
+        if (max.get().getValue() == 0) {
+            return new ArrayList<>();
+        }
+        allLikes.get(max.get().getKey()).removeAll(allLikes.get(userId));
+        return new ArrayList<>(allLikes.get(max.get().getKey()));
+    }
 
 }

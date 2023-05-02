@@ -8,7 +8,10 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import ru.yandex.practicum.filmorate.controllers.errors.DirectorRequestException;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
+import ru.yandex.practicum.filmorate.controllers.errors.NotFoundException;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
 
 import javax.validation.ConstraintViolation;
@@ -30,15 +33,20 @@ public class CustomAdvice {
         return getResponse(re.getCodeStatus(), re.getMessage());
     }
 
+    @ExceptionHandler(DirectorRequestException.class)
+    public ResponseEntity<Response> handleUserException(DirectorRequestException re) {
+        return getResponse(re.getCodeStatus(), re.getMessage());
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Response> handleBindException(ConstraintViolationException cve){
+    public ResponseEntity<Response> handleBindException(ConstraintViolationException cve) {
         List<ConstraintViolation<?>> constraintViolations = new ArrayList<>(cve.getConstraintViolations());
         StringBuilder message = new StringBuilder();
         for (ConstraintViolation<?> constraintViolation : constraintViolations) {
             message.append(constraintViolation.getMessageTemplate()).append("; ");
         }
         log.info(message.toString().trim());
-        return new ResponseEntity<>(new Response(message.toString().trim()),HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new Response(message.toString().trim()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -50,14 +58,28 @@ public class CustomAdvice {
         }
         message.append(target).append("; ");
         log.info(message.toString().trim());
-        return new ResponseEntity<>(new Response(message.toString().trim()),HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new Response(message.toString().trim()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(JsonParseException.class)
     public ResponseEntity<Response> handleException(JsonParseException ex) {
         String message = "Ошибка в полученном Json, проверьте данные и повторите попытку!";
         log.info(message);
-        return new ResponseEntity<>(new Response(message),HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(new Response(message), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Response> handleException(NotFoundException ex) {
+        log.warn(ex.getMessage());
+        return new ResponseEntity<>(new Response(ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Response> methodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        String id = (String) ex.getValue();
+        String message = String.format("Данный id: %s, не целое число!",id);
+        log.info(message);
+        return new ResponseEntity<>(new Response(message), HttpStatus.BAD_REQUEST);
     }
 
     private ResponseEntity<Response> getResponse(HttpStatus httpStatus, String message) {

@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.controllers.errors;
 
 import org.springframework.http.HttpStatus;
 
-public class UserRequestException extends RuntimeException{
+public class UserRequestException extends RuntimeException {
     private HttpStatus codeStatus;
 
     public HttpStatus getCodeStatus() {

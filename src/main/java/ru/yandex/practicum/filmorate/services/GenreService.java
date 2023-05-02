@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storages.GenreStorage;
+import ru.yandex.practicum.filmorate.storages.dao.GenreStorage;
 
 import java.util.List;
 
