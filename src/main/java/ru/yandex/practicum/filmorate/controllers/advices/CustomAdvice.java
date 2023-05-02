@@ -75,7 +75,7 @@ public class CustomAdvice {
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<Response> MethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex){
+    public ResponseEntity<Response> methodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
         String id = (String) ex.getValue();
         String message = String.format("Данный id: %s, не целое число!",id);
         log.info(message);
