@@ -33,7 +33,7 @@ public class ReviewController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Review> getReview(@PathVariable("id") int id) {
-        return ResponseEntity.ok().body(service.getReview(id));
+        return ResponseEntity.ok().body(service.findById(id));
     }
 
     @GetMapping

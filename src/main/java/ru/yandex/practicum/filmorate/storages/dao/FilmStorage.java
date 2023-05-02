@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storages;
+package ru.yandex.practicum.filmorate.storages.dao;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -20,7 +20,7 @@ public interface FilmStorage {
 
     List<Film> getFilmBySearch(String query, String by);
 
-    boolean exists(int id);
+    boolean isExists(int id);
 
     List<Film> getFilmsByDirector(int directorId, Optional<String> sortBy);
 }

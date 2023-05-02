@@ -1,8 +1,8 @@
-package ru.yandex.practicum.filmorate.storages.dao;
+package ru.yandex.practicum.filmorate.storages;
 
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.storages.LikesStorage;
+import ru.yandex.practicum.filmorate.storages.dao.LikesStorage;
 
 import java.util.HashMap;
 import java.util.HashSet;

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storages.dao;
+package ru.yandex.practicum.filmorate.storages;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -7,7 +7,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storages.ReviewStorage;
+import ru.yandex.practicum.filmorate.storages.dao.ReviewStorage;
 
 import java.util.List;
 

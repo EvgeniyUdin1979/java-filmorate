@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storages.dao;
+package ru.yandex.practicum.filmorate.storages;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -9,7 +9,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storages.UserStorage;
+import ru.yandex.practicum.filmorate.storages.dao.UserStorage;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -89,7 +89,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public boolean exists(int id) {
+    public boolean isExists(int id) {
         String query = "SELECT EXISTS(SELECT * FROM users WHERE id = :ID)";
         return jdbcTemplate.queryForObject(query, Map.of("ID", id), Boolean.class);
     }

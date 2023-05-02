@@ -14,8 +14,12 @@ import java.util.List;
 @RequestMapping(value = "/directors")
 public class DirectorController {
 
-
     private final DirectorService service;
+
+    @Autowired
+    public DirectorController(DirectorService service) {
+        this.service = service;
+    }
 
     @GetMapping
     public List<Director> getAll() {
@@ -24,9 +28,9 @@ public class DirectorController {
     }
 
     @GetMapping(value = "/{id}")
-    public Director getDirectorById(@PathVariable("id") String id) {
+    public Director getDirectorById(@PathVariable("id") int id) {
         Director director = service.findById(id);
-        log.info(String.format("Получены данные по режиссёру id: %s.", id));
+        log.info(String.format("Получены данные по режиссёру id: %d.", id));
         return director;
     }
 
@@ -40,14 +44,14 @@ public class DirectorController {
     @PutMapping
     public Director updateDirector(@RequestBody @Valid Director director) {
         director = service.updateDirector(director);
-        log.info(String.format("Обновлены данные по режиссёру id: %s.", director.getId()));
+        log.info(String.format("Обновлены данные по режиссёру id: %d.", director.getId()));
         return director;
     }
 
     @DeleteMapping(value = "/{id}")
-    public void deleteDirector(@PathVariable("id") String id) {
+    public void deleteDirector(@PathVariable("id") int id) {
         service.deleteById(id);
-        log.info(String.format("Удалены данные по режиссёру id: %s.", id));
+        log.info(String.format("Удалены данные по режиссёру id: %d.", id));
     }
 
     @DeleteMapping("/resetDB")
@@ -56,8 +60,5 @@ public class DirectorController {
         service.removeAll();
     }
 
-    @Autowired
-    public DirectorController(DirectorService service) {
-        this.service = service;
-    }
+
 }

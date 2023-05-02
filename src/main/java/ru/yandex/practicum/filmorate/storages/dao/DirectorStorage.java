@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storages;
+package ru.yandex.practicum.filmorate.storages.dao;
 
 import ru.yandex.practicum.filmorate.model.Director;
 
@@ -14,6 +14,8 @@ public interface DirectorStorage {
     void removeById(int id);
 
     Director update(Director director);
+
+    boolean isExists(int id);
 
     void removeAll();
 }

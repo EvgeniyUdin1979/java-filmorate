@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storages.dao;
+package ru.yandex.practicum.filmorate.storages;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storages.FilmStorage;
+import ru.yandex.practicum.filmorate.storages.dao.FilmStorage;
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -144,9 +144,10 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public boolean exists(int id) {
+    public boolean isExists(int id) {
         String query = "SELECT EXISTS(SELECT * FROM film WHERE id = :ID)";
-        return jdbcTemplate.queryForObject(query, Map.of("ID", id), Boolean.class);
+        Boolean aBoolean = jdbcTemplate.queryForObject(query, Map.of("ID", id), Boolean.class);
+        return aBoolean;
     }
 
     @Override

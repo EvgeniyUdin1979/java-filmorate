@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storages.MpaStorage;
+import ru.yandex.practicum.filmorate.storages.dao.MpaStorage;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storages.dao;
+package ru.yandex.practicum.filmorate.storages;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -9,7 +9,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.storages.DirectorStorage;
+import ru.yandex.practicum.filmorate.storages.dao.DirectorStorage;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -19,8 +19,8 @@ import java.util.Map;
 public class DirectorDbStorage implements DirectorStorage {
     private static final RowMapper<Director> DIRECTOR_ROW_MAPPER = (rs, rowNum) ->
             new Director(rs.getInt("ID"), rs.getString("NAME"));
-    private NamedParameterJdbcTemplate jdbcTemplate;
-    private DataSource dataSource;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final DataSource dataSource;
 
     @Autowired
     public DirectorDbStorage(DataSource dataSource) {
@@ -69,6 +69,13 @@ public class DirectorDbStorage implements DirectorStorage {
     public void removeById(int id) {
         String sql = "DELETE FROM DIRECTOR WHERE ID = :ID";
         jdbcTemplate.update(sql, Map.of("ID", id));
+    }
+
+    @Override
+    public boolean isExists(int id) {
+        String sql = "SELECT EXISTS(SELECT * FROM DIRECTOR WHERE ID = :ID);";
+        Boolean result = jdbcTemplate.queryForObject(sql, Map.of("ID", id), Boolean.class);
+        return result;
     }
 
     @Override
