@@ -8,6 +8,8 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import ru.yandex.practicum.filmorate.controllers.errors.DirectorRequestException;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
 import ru.yandex.practicum.filmorate.controllers.errors.NotFoundException;
 import ru.yandex.practicum.filmorate.controllers.errors.UserRequestException;
@@ -28,6 +30,11 @@ public class CustomAdvice {
 
     @ExceptionHandler(UserRequestException.class)
     public ResponseEntity<Response> handleUserException(UserRequestException re) {
+        return getResponse(re.getCodeStatus(), re.getMessage());
+    }
+
+    @ExceptionHandler(DirectorRequestException.class)
+    public ResponseEntity<Response> handleUserException(DirectorRequestException re) {
         return getResponse(re.getCodeStatus(), re.getMessage());
     }
 
@@ -65,6 +72,14 @@ public class CustomAdvice {
     public ResponseEntity<Response> handleException(NotFoundException ex) {
         log.warn(ex.getMessage());
         return new ResponseEntity<>(new Response(ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Response> MethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex){
+        String id = (String) ex.getValue();
+        String message = String.format("Данный id: %s, не целое число!",id);
+        log.info(message);
+        return new ResponseEntity<>(new Response(message), HttpStatus.BAD_REQUEST);
     }
 
     private ResponseEntity<Response> getResponse(HttpStatus httpStatus, String message) {

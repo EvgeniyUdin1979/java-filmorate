@@ -4,9 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.controllers.errors.DirectorRequestException;
 import ru.yandex.practicum.filmorate.controllers.errors.FilmRequestException;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.storages.DirectorStorage;
+import ru.yandex.practicum.filmorate.storages.dao.DirectorStorage;
 
 import java.util.List;
 
@@ -14,58 +15,57 @@ import java.util.List;
 @Service
 public class DirectorService {
 
-    private final DirectorStorage storage;
+    private final DirectorStorage directorStorage;
 
-    public List<Director> findAll() {
-        return storage.findAll();
+    @Autowired
+    public DirectorService(DirectorStorage directorStorage) {
+        this.directorStorage = directorStorage;
     }
 
-    public Director findById(String userId) {
-        int id = validateAndParseInt(userId);
-        Director director = storage.findById(id);
-        if (director == null) {
-            // Я думаю можно оставить FilmRequestException, не создавая новую ошибку.
-            throw new FilmRequestException("Режиссёра с данным id " + id + " не существует!", HttpStatus.NOT_FOUND);
-        }
-        return director;
+
+    public List<Director> findAll() {
+        return directorStorage.findAll();
+    }
+
+    public Director findById(int id) {
+        findDirectorById(id);
+        return directorStorage.findById(id);
     }
 
     public Director updateDirector(Director director) {
-        if (director.getId() == 0) {
-            String message = "Для обновления режиссёра id нужно указать больше чем 0!";
-            log.info(message, director);
+        int id = director.getId();
+        if (id == 0) {
+            String message = String.format("Для обновления режиссёра id нужно указать больше чем 0! %s", director);
+            log.info(message);
             throw new FilmRequestException(message);
         }
-        findById(String.valueOf(director.getId()));
-        return storage.update(director);
+        findDirectorById(id);
+        return directorStorage.update(director);
     }
 
     public Director createDirector(Director director) {
-        return storage.create(director);
+//        if (director.getId() != 0) {
+//            String message = String.format("Для создания режиссёра id не нужно указать! %s", director);
+//            log.info(message);
+//            throw new DirectorRequestException(message);
+//        }
+        return directorStorage.create(director);
     }
 
-    public void deleteById(String userId) {
-        int id = validateAndParseInt(userId);
-        findById(String.valueOf(id));
-        storage.removeById(id);
+    public void deleteById(int id) {
+        findDirectorById(id);
+        directorStorage.removeById(id);
+    }
+
+    public void findDirectorById(int id) {
+        if (!directorStorage.isExists(id)) {
+            String message = String.format("Режиссёра с данным id %d не существует!", id);
+            log.info(message);
+            throw new DirectorRequestException(message, HttpStatus.NOT_FOUND);
+        }
     }
 
     public void removeAll() {
-        storage.removeAll();
-    }
-
-    @Autowired
-    public DirectorService(DirectorStorage storage) {
-        this.storage = storage;
-    }
-
-    private int validateAndParseInt(String id) {
-        try {
-            return Integer.parseInt(id);
-        } catch (NumberFormatException e) {
-            String message = String.format("Данный id: %s, не целое число!", id);
-            log.info(message);
-            throw new FilmRequestException(message, HttpStatus.BAD_REQUEST);
-        }
+        directorStorage.removeAll();
     }
 }

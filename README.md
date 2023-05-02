@@ -1,50 +1,42 @@
 # java-filmorate
-![](db_project_1.png)
-
-## Описание базы данных.
-Данная база содержит несколько схем, по этому для обращение к таблицам происходит через название схемы.
+![](h2db.png)
 
 ### Запросы.
 
 #### Все фильмы с описанием и рейтингом.
 ~~~sql
-SELECT f.name, f.description, r.name
-FROM filmorate.film AS f
-JOIN filmorate.rating AS r ON r.id = f.rating_id
-ORDER BY r.name DESC 
+SELECT
+	 F.NAME, F.DESCRIPTION,R.NAME
+FROM
+	PUBLIC.FILM F
+JOIN
+    PUBLIC.RATING R ON R.ID = F.RATING_ID; 
 ~~~
 
 #### Все фильмы и их жанры.
 ~~~sql
-SELECT f.name,g.name
-FROM filmorate.film_x_genre fg
-JOIN filmorate.film f on f.id = fg.film_id
-JOIN filmorate.genre g on g.id = fg.genre_id
+SELECT
+    F.NAME FILM_NAME,
+    G.NAME GENRE_NAME
+FROM
+	PUBLIC.FILM_X_GENRE FG
+JOIN PUBLIC.FILM F ON F.ID = FG.FILM_ID
+JOIN PUBLIC.GENRE G ON G.ID = FG.GENRE_ID;
 ~~~
 
-#### Получение количеста лайков у фильма.
+#### Получение количеста лайков у фильмов.
 ~~~sql
-SELECT f.name,count(l.user_id)
-FROM filmorate.likes as l
-JOIN filmorate.film as f on f.id = l.film_id
-WHERE l.film_id = 1
-GROUP BY f.name;
-~~~
-
-#### Состояние дружбы всех пользователей.
-~~~sql
-SELECT  u1.name, f.friendship, u2.name
-FROM filmorate.friends as f
-FULL JOIN filmorate.user as u1 on u1.id = f.user_id_1
-LEFT JOIN filmorate.user as u2 on u2.id = f.user_id_2
+SELECT 
+    F.NAME,COUNT(L.USER_ID)
+FROM 
+    PUBLIC.LIKES L
+JOIN PUBLIC.FILM F ON F.ID = L.FILM_ID
+GROUP BY F.NAME;
 ~~~
 
 #### Получение общих друзей.
 ~~~sql
-SELECT user_id_2
-FROM filmorate.friends
-WHERE user_id_2 IN (SELECT user_id_2
-FROM filmorate.friends as f
-WHERE f.friendship = true and f.user_id_1 = 2)
-and user_id_1 = 6 and friendship = true;
+(SELECT FR.USER_ID_2 FROM PUBLIC.FRIENDS FR WHERE FR.USER_ID_1 = 1)
+INTERSECT
+(SELECT FR.USER_ID_2 FROM  PUBLIC.FRIENDS FR WHERE FR.USER_ID_1 = 2);
 ~~~

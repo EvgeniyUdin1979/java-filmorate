@@ -1,25 +1,14 @@
 package ru.yandex.practicum.filmorate.controllers;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -27,55 +16,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
+@Sql(scripts = "file:src/test/resources/files/maindata.sql")
 @TestPropertySource(
         locations = "classpath:application-integrationtest.properties")
 public class FilmControllerWithMpaAndGenreTest {
-    private final MockMvc mockMvc;
 
     @Autowired
-    FilmControllerWithMpaAndGenreTest(WebApplicationContext wac) {
+    private MockMvc mockMvc;
 
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(wac)
-                .addFilter(((request, response, chain) -> {
-        response.setCharacterEncoding("UTF-8");
-        chain.doFilter(request, response);
-    })).build();
-}
-
-    @BeforeEach
+    @AfterEach
     void setUp() {
         try {
             this.mockMvc.perform(delete("/films/resetDB"));
             this.mockMvc.perform(delete("/users/resetDB"));
+            this.mockMvc.perform(delete("/directors/resetDB"));
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private void upData(String urlData, String urlRequest) throws Exception {
-        String string = Files.readString(Path.of(urlData));
-        ObjectMapper mapper = JsonMapper.builder()
-                .addModules(new JavaTimeModule())
-                .build();
-        switch (urlRequest) {
-            case "/films":
-                List<Film> films = mapper.readValue(string, new TypeReference<List<Film>>() {
-                });
-                for (Film film : films) {
-                    this.mockMvc.perform(post(urlRequest)
-                            .content(mapper.writeValueAsString(film))
-                            .contentType("application/json;charset=UTF-8"));
-                    System.out.println(film);
-                }
-                break;
-            case "/users":
-                List<User> users = mapper.readValue(string, new TypeReference<List<User>>() {
-                });
-                for (User user : users) {
-                    this.mockMvc.perform(post(urlRequest)
-                            .content(mapper.writeValueAsString(user))
-                            .contentType("application/json;charset=UTF-8"));
-                }
         }
     }
 
@@ -153,7 +109,6 @@ public class FilmControllerWithMpaAndGenreTest {
 
     @Test
     void filmID1UpdateGenre() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
         String json = "{\n" +
                 "  \"id\": 1,\n" +
                 "  \"name\": \"Film Updated\",\n" +
@@ -180,7 +135,6 @@ public class FilmControllerWithMpaAndGenreTest {
 
     @Test
     void filmID1UpdateGenreWithDuplicate() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
         String json = "{\n" +
                 "  \"id\": 1,\n" +
                 "  \"name\": \"New film\",\n" +

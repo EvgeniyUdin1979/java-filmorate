@@ -1,38 +1,36 @@
 package ru.yandex.practicum.filmorate.controllers;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
+@Sql(scripts = "file:src/test/resources/files/maindata.sql")
 @TestPropertySource(
         locations = "classpath:application-integrationtest.properties")
 public class FilmControllerWithSearchTest {
 
     @Autowired
-    MockMvc mockMvc;
-
+    private MockMvc mockMvc;
 
     @BeforeEach
+    void initChanges() throws Exception {
+        initDate();
+    }
+
+    @AfterEach
     void setUp() {
         try {
             this.mockMvc.perform(delete("/films/resetDB"));
@@ -43,38 +41,16 @@ public class FilmControllerWithSearchTest {
         }
     }
 
-    private void upData(String urlData, String urlRequest) throws Exception {
-        String string = Files.readString(Path.of(urlData));
-        ObjectMapper mapper = JsonMapper.builder()
-                .addModules(new JavaTimeModule())
-                .build();
-        switch (urlRequest) {
-            case "/films":
-                List<Film> films = mapper.readValue(string, new TypeReference<List<Film>>() {
-                });
-                for (Film film : films) {
-                    this.mockMvc.perform(post(urlRequest)
-                            .content(mapper.writeValueAsString(film))
-                            .contentType("application/json;charset=UTF-8"));
-                    System.out.println(film);
-                }
-                break;
-            case "/users":
-                List<User> users = mapper.readValue(string, new TypeReference<List<User>>() {
-                });
-                for (User user : users) {
-                    this.mockMvc.perform(post(urlRequest)
-                            .content(mapper.writeValueAsString(user))
-                            .contentType("application/json;charset=UTF-8"));
-                }
-        }
-    }
-
     @Test
-    public void testSearchFilmsAnywayByupDatE() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
-        upData("src/test/resources/files/userslist.txt", "/users");
-        initDate();
+    void testSearchFilmsAnywayByupDatE() throws Exception {
+        String jsonDirector = "{\n" +
+                "   \"id\": 1,\n" +
+                "   \"name\": \"Director updated\"\n" +
+                " }";
+        this.mockMvc.perform(put("/directors")
+                        .header("Content-Type", "application/json; charset=utf-8")
+                        .content(jsonDirector))
+                .andExpect(status().isOk());
 
         this.mockMvc.perform(get("/films/search")
                         .param("query", "upDatE")
@@ -94,11 +70,7 @@ public class FilmControllerWithSearchTest {
     }
 
     @Test
-    public void testSearchFilmsAnywayEmpty() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
-        upData("src/test/resources/files/userslist.txt", "/users");
-        initDate();
-
+    void testSearchFilmsAnywayEmpty() throws Exception {
         this.mockMvc.perform(get("/films/search")
                         .param("query", "не найти")
                         .param("by", "director", "title")
@@ -112,11 +84,7 @@ public class FilmControllerWithSearchTest {
     }
 
     @Test
-    public void testSearchFilmsByTitle() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
-        upData("src/test/resources/files/userslist.txt", "/users");
-        initDate();
-
+    void testSearchFilmsByTitle() throws Exception {
         this.mockMvc.perform(get("/films/search")
                         .param("query", "UPdat")
                         .param("by", "title")
@@ -133,10 +101,15 @@ public class FilmControllerWithSearchTest {
     }
 
     @Test
-    public void testSearchFilmsByDirector() throws Exception {
-        upData("src/test/resources/files/filmslist.txt", "/films");
-        upData("src/test/resources/files/userslist.txt", "/users");
-        initDate();
+    void testSearchFilmsByDirector() throws Exception {
+        String jsonDirector = "{\n" +
+                "   \"id\": 1,\n" +
+                "   \"name\": \"Director updated\"\n" +
+                " }";
+        this.mockMvc.perform(put("/directors")
+                        .header("Content-Type", "application/json; charset=utf-8")
+                        .content(jsonDirector))
+                .andExpect(status().isOk());
 
         this.mockMvc.perform(get("/films/search")
                         .param("query", "UPdat")
@@ -155,10 +128,7 @@ public class FilmControllerWithSearchTest {
     }
 
     private void initDate() throws Exception {
-        String jsonDirector = "{\n" +
-                "   \"id\": 1,\n" +
-                "   \"name\": \"Director updated\"\n" +
-                " }";
+
         String jsonAddDirector = "{\n" +
                 "     \"id\": 1,\n" +
                 "     \"name\": \"New film #1\",\n" +
@@ -178,10 +148,7 @@ public class FilmControllerWithSearchTest {
                 "     \"rate\": 4,\n" +
                 "     \"mpa\": { \"id\": 5}\n" +
                 "   }";
-        this.mockMvc.perform(post("/directors")
-                        .header("Content-Type", "application/json; charset=utf-8")
-                        .content(jsonDirector))
-                .andExpect(status().isOk());
+
         this.mockMvc.perform(put("/films")
                         .header("Content-Type", "application/json; charset=utf-8")
                         .content(jsonAddDirector))
